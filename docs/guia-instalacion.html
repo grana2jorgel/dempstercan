@@ -1,0 +1,929 @@
+<title>Poner DempsterCan en el móvil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+  :root {
+    --ground:   #f4f6f8;
+    --surface:  #ffffff;
+    --sunken:   #eef1f4;
+    --ink:      #171b1f;
+    --ink-2:    #4d565f;
+    --ink-3:    #7e8892;
+    --line:     #dde2e7;
+    --line-2:   #c7ced5;
+    --terra:    #b85f37;
+    --terra-sf: #fbf1ec;
+    --slate:    #3b6a97;
+    --slate-sf: #edf2f7;
+    --moss:     #40805f;
+    --moss-sf:  #edf5f0;
+    --amber:    #b07d1c;
+    --amber-sf: #fbf4e4;
+    --code-bg:  #1c2126;
+    --code-fg:  #dfe5ea;
+    --code-dim: #8d99a4;
+
+    --sans: "IBM Plex Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --cond: "IBM Plex Sans Condensed", "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+    --rail: 3.25rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:   #0f1316;
+      --surface:  #171c21;
+      --sunken:   #1e242a;
+      --ink:      #e6eaee;
+      --ink-2:    #a7b1ba;
+      --ink-3:    #6f7982;
+      --line:     #2a3138;
+      --line-2:   #3a434b;
+      --terra:    #e08e63;
+      --terra-sf: #2a1d16;
+      --slate:    #7aa8d0;
+      --slate-sf: #16202a;
+      --moss:     #77b894;
+      --moss-sf:  #14211a;
+      --amber:    #d7a748;
+      --amber-sf: #241d0e;
+      --code-bg:  #0a0d10;
+      --code-fg:  #d6dde3;
+      --code-dim: #77828c;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:   #0f1316;
+    --surface:  #171c21;
+    --sunken:   #1e242a;
+    --ink:      #e6eaee;
+    --ink-2:    #a7b1ba;
+    --ink-3:    #6f7982;
+    --line:     #2a3138;
+    --line-2:   #3a434b;
+    --terra:    #e08e63;
+    --terra-sf: #2a1d16;
+    --slate:    #7aa8d0;
+    --slate-sf: #16202a;
+    --moss:     #77b894;
+    --moss-sf:  #14211a;
+    --amber:    #d7a748;
+    --amber-sf: #241d0e;
+    --code-bg:  #0a0d10;
+    --code-fg:  #d6dde3;
+    --code-dim: #77828c;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .envoltorio {
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 3rem 1.25rem 6rem;
+  }
+
+  /* ---------------------------------------------------- cabecera */
+
+  .cabecera { margin-bottom: 2.75rem; }
+
+  .eyebrow {
+    font-family: var(--cond);
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--terra);
+    margin: 0 0 0.6rem;
+  }
+
+  h1 {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: clamp(2.1rem, 6vw, 3.1rem);
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.85rem;
+    text-wrap: balance;
+  }
+
+  .entradilla {
+    font-size: 1.06rem;
+    color: var(--ink-2);
+    max-width: 40rem;
+    margin: 0;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-top: 1.6rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+    color: var(--ink-3);
+  }
+  .meta b { color: var(--ink-2); font-weight: 600; }
+
+  /* --------------------------------------------------- secciones */
+
+  section { margin-top: 3.25rem; }
+
+  .titulo-parte {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    margin: 0 0 0.4rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 2px solid var(--ink);
+  }
+  .titulo-parte .num {
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--terra);
+    letter-spacing: 0.04em;
+    flex: 0 0 auto;
+  }
+  .titulo-parte h2 {
+    font-family: var(--cond);
+    font-weight: 700;
+    font-size: clamp(1.35rem, 3.4vw, 1.7rem);
+    line-height: 1.15;
+    margin: 0;
+    flex: 1;
+    text-wrap: balance;
+  }
+  .titulo-parte .duracion {
+    font-family: var(--mono);
+    font-size: 0.74rem;
+    color: var(--ink-3);
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .intro-parte { color: var(--ink-2); margin: 1rem 0 0; max-width: 42rem; }
+
+  /* -------------------------------------------------------- pasos */
+
+  ol.pasos { list-style: none; margin: 1.6rem 0 0; padding: 0; }
+
+  ol.pasos > li {
+    position: relative;
+    padding-left: var(--rail);
+    padding-bottom: 1.9rem;
+  }
+  ol.pasos > li::before {
+    content: attr(data-n);
+    position: absolute;
+    left: 0; top: 0;
+    width: 2.05rem; height: 2.05rem;
+    display: grid; place-items: center;
+    border-radius: 50%;
+    border: 1.5px solid var(--line-2);
+    background: var(--surface);
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    color: var(--ink-2);
+    z-index: 1;
+  }
+  /* Hilo vertical que une los pasos: la guía es una secuencia. */
+  ol.pasos > li::after {
+    content: "";
+    position: absolute;
+    left: 1.02rem; top: 2.05rem; bottom: 0;
+    width: 1.5px;
+    background: var(--line);
+  }
+  ol.pasos > li:last-child { padding-bottom: 0; }
+  ol.pasos > li:last-child::after { display: none; }
+
+  ol.pasos > li.hecho::before {
+    content: "✓";
+    border-color: var(--moss);
+    background: var(--moss);
+    color: #fff;
+    font-family: var(--sans);
+    font-size: 1rem;
+  }
+  ol.pasos > li.hecho > .cuerpo { opacity: 0.55; }
+
+  .cuerpo { transition: opacity 140ms ease; }
+  .cuerpo > *:first-child { margin-top: 0; }
+  .cuerpo > *:last-child { margin-bottom: 0; }
+  .cuerpo p { margin: 0 0 0.75rem; max-width: 40rem; }
+
+  .marcar {
+    margin-top: 0.55rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    color: var(--ink-3);
+    cursor: pointer;
+    user-select: none;
+    background: none;
+    border: 0;
+    padding: 0.15rem 0;
+    font-family: var(--sans);
+  }
+  .marcar:hover { color: var(--ink-2); }
+  .marcar:focus-visible { outline: 2px solid var(--slate); outline-offset: 3px; border-radius: 3px; }
+  .marcar .caja {
+    width: 0.95rem; height: 0.95rem;
+    border: 1.5px solid var(--line-2);
+    border-radius: 3px;
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+  li.hecho .marcar .caja { background: var(--moss); border-color: var(--moss); }
+
+  /* -------------------------------------------------- tipografía */
+
+  h3 {
+    font-family: var(--cond);
+    font-weight: 600;
+    font-size: 1.06rem;
+    margin: 2rem 0 0.7rem;
+    color: var(--ink);
+  }
+
+  a { color: var(--slate); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--slate); outline-offset: 2px; border-radius: 2px; }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--sunken);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.08em 0.34em;
+    word-break: break-word;
+  }
+
+  kbd {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    background: var(--surface);
+    border: 1px solid var(--line-2);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    white-space: nowrap;
+  }
+
+  .ruta {
+    font-family: var(--mono);
+    font-size: 0.86em;
+    color: var(--ink);
+    background: var(--sunken);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.08em 0.4em;
+    white-space: nowrap;
+  }
+
+  /* ----------------------------------------------------- código */
+
+  .bloque-codigo {
+    position: relative;
+    margin: 0.9rem 0 1.1rem;
+    border-radius: 7px;
+    overflow: hidden;
+    background: var(--code-bg);
+  }
+  .bloque-codigo pre {
+    margin: 0;
+    padding: 0.95rem 3.6rem 0.95rem 1rem;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.845rem;
+    line-height: 1.72;
+    color: var(--code-fg);
+  }
+  .bloque-codigo .c { color: var(--code-dim); }
+  .copiar {
+    position: absolute;
+    top: 0.5rem; right: 0.5rem;
+    font-family: var(--sans);
+    font-size: 0.7rem;
+    letter-spacing: 0.03em;
+    color: var(--code-dim);
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.13);
+    border-radius: 5px;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+  }
+  .copiar:hover { color: var(--code-fg); background: rgba(255,255,255,0.13); }
+  .copiar:focus-visible { outline: 2px solid var(--slate); outline-offset: 2px; }
+  .copiar.ok { color: #8fd8ac; border-color: rgba(143,216,172,0.4); }
+
+  /* ----------------------------------------------------- avisos */
+
+  .aviso {
+    border-left: 3px solid var(--amber);
+    background: var(--amber-sf);
+    padding: 0.8rem 1rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1rem 0;
+    font-size: 0.94rem;
+    color: var(--ink);
+  }
+  .aviso.info { border-left-color: var(--slate); background: var(--slate-sf); }
+  .aviso.bien { border-left-color: var(--moss); background: var(--moss-sf); }
+  .aviso p { margin: 0 0 0.5rem; }
+  .aviso p:last-child { margin: 0; }
+  .aviso b { font-weight: 600; }
+
+  .comprobacion {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+    background: var(--moss-sf);
+    border: 1px solid color-mix(in srgb, var(--moss) 30%, transparent);
+    border-radius: 6px;
+    padding: 0.7rem 0.9rem;
+    margin: 1rem 0;
+    font-size: 0.92rem;
+  }
+  .comprobacion .ico {
+    flex: 0 0 auto;
+    color: var(--moss);
+    font-weight: 700;
+    font-family: var(--mono);
+    line-height: 1.62;
+  }
+  .comprobacion b { font-weight: 600; }
+
+  /* ------------------------------------------------------ rutas */
+
+  .rutas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+    gap: 1rem;
+    margin: 1.6rem 0 0;
+  }
+  .ruta-tarjeta {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.1rem 1.15rem;
+  }
+  .ruta-tarjeta.recomendada { border-color: var(--terra); box-shadow: inset 3px 0 0 var(--terra); }
+  .ruta-tarjeta h3 { margin: 0 0 0.15rem; font-size: 1.02rem; }
+  .ruta-tarjeta .etiqueta {
+    font-family: var(--cond);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--terra);
+    display: block;
+    margin-bottom: 0.35rem;
+  }
+  .ruta-tarjeta .etiqueta.gris { color: var(--ink-3); }
+  .ruta-tarjeta p { margin: 0.5rem 0 0; font-size: 0.9rem; color: var(--ink-2); }
+  .ruta-tarjeta ul { margin: 0.6rem 0 0; padding-left: 1.1rem; font-size: 0.88rem; color: var(--ink-2); }
+  .ruta-tarjeta li { margin-bottom: 0.2rem; }
+
+  /* ------------------------------------------------------ tabla */
+
+  .tabla-envoltorio { overflow-x: auto; margin: 1.1rem 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    min-width: 32rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--cond);
+    font-weight: 600;
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    border-bottom: 1.5px solid var(--line-2);
+  }
+  td:first-child { font-weight: 500; }
+
+  /* --------------------------------------------------- cierre */
+
+  .cierre {
+    margin-top: 3.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.88rem;
+    color: var(--ink-3);
+    max-width: 40rem;
+  }
+
+  ul.limpia { list-style: none; padding: 0; margin: 1rem 0 0; }
+  ul.limpia li {
+    padding-left: 1.1rem;
+    position: relative;
+    margin-bottom: 0.5rem;
+    color: var(--ink-2);
+  }
+  ul.limpia li::before {
+    content: "—";
+    position: absolute; left: 0;
+    color: var(--ink-3);
+  }
+
+  @media (max-width: 34rem) {
+    :root { --rail: 2.6rem; }
+    .envoltorio { padding: 2rem 1rem 4rem; }
+    .titulo-parte { flex-wrap: wrap; gap: 0.4rem 0.7rem; }
+    .titulo-parte .duracion { width: 100%; }
+    ol.pasos > li::before { width: 1.75rem; height: 1.75rem; font-size: 0.75rem; }
+    ol.pasos > li::after { left: 0.87rem; top: 1.75rem; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+
+<div class="envoltorio">
+
+  <header class="cabecera">
+    <p class="eyebrow">DempsterCan · guía de puesta en marcha</p>
+    <h1>Poner DempsterCan en el móvil</h1>
+    <p class="entradilla">Del archivo <span class="ruta">dempstercan.zip</span> a un icono en la pantalla de inicio del teléfono, funcionando sin conexión. Todos los pasos, sin dar por sabido nada.</p>
+    <div class="meta">
+      <span><b>Tiempo total</b> unos 20 minutos</span>
+      <span><b>Hace falta</b> una cuenta de GitHub, gratuita</span>
+      <span><b>No hace falta</b> saber programar</span>
+    </div>
+  </header>
+
+  <div class="aviso info">
+    <p><b>Marque los pasos según los complete.</b> El navegador recuerda por dónde iba, así que puede cerrar esta página, ir al teléfono y volver.</p>
+  </div>
+
+  <!-- ============================================ PARTE 1 -->
+  <section>
+    <div class="titulo-parte">
+      <span class="num">01</span>
+      <h2>Preparar la carpeta en el ordenador</h2>
+      <span class="duracion">3 min</span>
+    </div>
+    <p class="intro-parte">El objetivo de esta parte es tener en el escritorio una carpeta con todos los archivos, incluidos los que el sistema esconde por empezar por punto.</p>
+
+    <ol class="pasos">
+      <li data-n="1">
+        <div class="cuerpo">
+          <p>Descargue <span class="ruta">dempstercan.zip</span> de la conversación y descomprímalo. En Windows: clic derecho → <i>Extraer todo</i>. En Mac: doble clic.</p>
+        </div>
+      </li>
+
+      <li data-n="2">
+        <div class="cuerpo">
+          <p>Abra la carpeta <span class="ruta">dempstercan</span> que ha aparecido. Dentro debe ver <span class="ruta">index.html</span>, y las carpetas <span class="ruta">js</span>, <span class="ruta">css</span>, <span class="ruta">icons</span>, <span class="ruta">docs</span>, <span class="ruta">test</span> y <span class="ruta">tools</span>.</p>
+        </div>
+      </li>
+
+      <li data-n="3">
+        <div class="cuerpo">
+          <p>Active la vista de archivos ocultos. Este paso <b>no es opcional</b>: hay una carpeta llamada <span class="ruta">.github</span> que el sistema esconde y que contiene las instrucciones que hacen que GitHub publique la app sola.</p>
+          <table style="min-width:0"><tbody>
+            <tr><td>Windows</td><td>Explorador → pestaña <i>Vista</i> → marcar <i>Elementos ocultos</i></td></tr>
+            <tr><td>Mac</td><td>En el Finder, pulse <kbd>⌘</kbd> <kbd>⇧</kbd> <kbd>.</kbd></td></tr>
+          </tbody></table>
+        </div>
+      </li>
+    </ol>
+
+    <div class="comprobacion">
+      <span class="ico">✓</span>
+      <div>Debe ver ahora <b><span class="ruta">.github</span></b> y <b><span class="ruta">.gitignore</span></b> en la carpeta. Si no aparecen, vuelva al paso 3: sin ellos la publicación automática no funcionará.</div>
+    </div>
+  </section>
+
+  <!-- ============================================ PARTE 2 -->
+  <section>
+    <div class="titulo-parte">
+      <span class="num">02</span>
+      <h2>Crear el repositorio en GitHub</h2>
+      <span class="duracion">8 min</span>
+    </div>
+    <p class="intro-parte">Aquí hay dos caminos. Llevan al mismo sitio; elija uno según lo que ya tenga instalado.</p>
+
+    <div class="rutas">
+      <div class="ruta-tarjeta recomendada">
+        <span class="etiqueta">Camino A · recomendado</span>
+        <h3>Por el navegador</h3>
+        <p>Arrastrando los archivos a la web de GitHub.</p>
+        <ul>
+          <li>No instala nada</li>
+          <li>Todo con el ratón</li>
+          <li>Para actualizar hay que volver a subir</li>
+        </ul>
+      </div>
+      <div class="ruta-tarjeta">
+        <span class="etiqueta gris">Camino B</span>
+        <h3>Con Git</h3>
+        <p>Cuatro comandos en una terminal.</p>
+        <ul>
+          <li>Requiere instalar Git</li>
+          <li>Actualizar después es un solo comando</li>
+          <li>Guarda el historial de cambios</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>Antes de elegir: crear la cuenta y el repositorio vacío</h3>
+    <ol class="pasos">
+      <li data-n="1">
+        <div class="cuerpo">
+          <p>Si aún no tiene cuenta, créela en <a href="https://github.com/signup" target="_blank" rel="noopener">github.com/signup</a>. Es gratuita y basta un correo.</p>
+        </div>
+      </li>
+      <li data-n="2">
+        <div class="cuerpo">
+          <p>Vaya a <a href="https://github.com/new" target="_blank" rel="noopener">github.com/new</a> y rellene:</p>
+          <table style="min-width:0"><tbody>
+            <tr><td>Repository name</td><td><span class="ruta">dempstercan</span></td></tr>
+            <tr><td>Visibilidad</td><td><b>Public</b> — hace falta para publicar la web sin pagar. La app no contiene datos de pacientes.</td></tr>
+            <tr><td>Add a README</td><td><b>Desmarcado</b></td></tr>
+            <tr><td>Add .gitignore / license</td><td><b>None</b> en los dos</td></tr>
+          </tbody></table>
+          <p>Pulse <b>Create repository</b>.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="aviso">
+      <p>Si marca alguna de esas tres casillas, GitHub crea archivos que chocarán con los suyos y el paso siguiente dará error. Si ya le ha pasado, borre el repositorio en <i>Settings → Danger Zone → Delete this repository</i> y vuelva a crearlo vacío.</p>
+    </div>
+
+    <h3>Camino A — subir por el navegador</h3>
+    <ol class="pasos">
+      <li data-n="3">
+        <div class="cuerpo">
+          <p>En la página del repositorio recién creado, pulse el enlace <b>uploading an existing file</b>.</p>
+        </div>
+      </li>
+      <li data-n="4">
+        <div class="cuerpo">
+          <p>Abra la carpeta <span class="ruta">dempstercan</span> en el explorador, seleccione <b>todo su contenido</b> con <kbd>Ctrl</kbd> <kbd>A</kbd> (o <kbd>⌘</kbd> <kbd>A</kbd>) y arrástrelo a la ventana del navegador.</p>
+          <p>Arrastre el <b>contenido</b>, no la carpeta que lo envuelve. Espere a que la lista termine de cargar: son unos cincuenta archivos.</p>
+        </div>
+      </li>
+      <li data-n="5">
+        <div class="cuerpo">
+          <p>Abajo, en el cuadro de mensaje, escriba <span class="ruta">primera version</span> y pulse <b>Commit changes</b>.</p>
+        </div>
+      </li>
+      <li data-n="6">
+        <div class="cuerpo">
+          <p>Compruebe en la lista de archivos que aparece la carpeta <span class="ruta">.github</span>. Si no está, es que el arrastre no incluyó los archivos ocultos: pulse <b>Add file → Create new file</b>, escriba como nombre <span class="ruta">.github/workflows/pages.yml</span>, pegue dentro el contenido de ese archivo de su carpeta, y guarde. Repita con <span class="ruta">.github/workflows/apk.yml</span>.</p>
+        </div>
+      </li>
+    </ol>
+
+    <h3>Camino B — con Git</h3>
+    <ol class="pasos">
+      <li data-n="3">
+        <div class="cuerpo">
+          <p>Instale Git si no lo tiene, desde <a href="https://git-scm.com/downloads" target="_blank" rel="noopener">git-scm.com/downloads</a>. Después abra una terminal (en Windows, <i>Git Bash</i>; en Mac, <i>Terminal</i>) y sitúese en la carpeta:</p>
+          <div class="bloque-codigo"><pre><code>cd <span class="c">/ruta/hasta/</span>dempstercan</code></pre></div>
+          <p>Truco: escriba <span class="ruta">cd</span> y un espacio, y arrastre la carpeta a la terminal; la ruta se escribe sola.</p>
+        </div>
+      </li>
+      <li data-n="4">
+        <div class="cuerpo">
+          <p>Cree el repositorio local y el primer commit. Cópielo entero de una vez:</p>
+          <div class="bloque-codigo"><pre><code>git init
+git add -A
+git commit -m "DempsterCan 1.1"
+git branch -M main</code></pre></div>
+          <p>Si es la primera vez que usa Git, le pedirá su nombre y correo; siga las instrucciones que él mismo imprime.</p>
+        </div>
+      </li>
+      <li data-n="5">
+        <div class="cuerpo">
+          <p>Conecte con GitHub y suba. Cambie <span class="ruta">USUARIO</span> por su nombre de usuario:</p>
+          <div class="bloque-codigo"><pre><code>git remote add origin https://github.com/USUARIO/dempstercan.git
+git push -u origin main</code></pre></div>
+        </div>
+      </li>
+      <li data-n="6">
+        <div class="cuerpo">
+          <p>Cuando pida credenciales, la contraseña de GitHub <b>no vale</b>. Hay que usar un token: <a href="https://github.com/settings/tokens" target="_blank" rel="noopener">github.com/settings/tokens</a> → <i>Generate new token (classic)</i> → marque el permiso <b>repo</b> → copie el token y péguelo donde pide la contraseña.</p>
+          <p>Alternativa más cómoda si la prefiere: instalar <a href="https://cli.github.com" target="_blank" rel="noopener">GitHub CLI</a> y ejecutar <span class="ruta">gh auth login</span> una sola vez.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="comprobacion">
+      <span class="ico">✓</span>
+      <div>Recargue la página del repositorio: debe ver la lista de archivos con <b><span class="ruta">index.html</span></b> y <b><span class="ruta">README.md</span></b> renderizado debajo.</div>
+    </div>
+  </section>
+
+  <!-- ============================================ PARTE 3 -->
+  <section>
+    <div class="titulo-parte">
+      <span class="num">03</span>
+      <h2>Publicar la app</h2>
+      <span class="duracion">4 min</span>
+    </div>
+    <p class="intro-parte">GitHub va a servir la app como una página web con dirección propia. Es lo que después se instala en el teléfono.</p>
+
+    <ol class="pasos">
+      <li data-n="1">
+        <div class="cuerpo">
+          <p>En el repositorio: pestaña <b>Settings</b> → en la columna izquierda, <b>Pages</b>.</p>
+        </div>
+      </li>
+      <li data-n="2">
+        <div class="cuerpo">
+          <p>En <i>Build and deployment</i> → <i>Source</i>, despliegue y elija <b>GitHub Actions</b>. No hay que guardar nada: el cambio se aplica solo.</p>
+        </div>
+      </li>
+      <li data-n="3">
+        <div class="cuerpo">
+          <p>Vaya a <b>Settings → Actions → General</b>, baje hasta <i>Workflow permissions</i> y marque <b>Read and write permissions</b>. Pulse <b>Save</b>.</p>
+        </div>
+      </li>
+      <li data-n="4">
+        <div class="cuerpo">
+          <p>Abra la pestaña <b>Actions</b>. Verá una ejecución llamada <i>Publicar en GitHub Pages</i>. Tarda entre uno y tres minutos; primero pasa las 37 pruebas del motor de cálculo y solo publica si están todas en verde.</p>
+        </div>
+      </li>
+      <li data-n="5">
+        <div class="cuerpo">
+          <p>Cuando termine, vuelva a <b>Settings → Pages</b>: arriba aparece la dirección.</p>
+          <div class="bloque-codigo"><pre><code>https://USUARIO.github.io/dempstercan/</code></pre></div>
+          <p>Ábrala en el ordenador para confirmar que carga. Debe ver la pantalla de la app con el lienzo en blanco.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="aviso info">
+      <p><b>Si la ejecución falla</b>, entre en ella y mire el paso marcado en rojo. Los dos motivos habituales son que <i>Source</i> siguiera en <i>Deploy from a branch</i> (paso 2) o que faltaran los permisos de escritura (paso 3).</p>
+    </div>
+  </section>
+
+  <!-- ============================================ PARTE 4 -->
+  <section>
+    <div class="titulo-parte">
+      <span class="num">04</span>
+      <h2>Instalarla en el teléfono</h2>
+      <span class="duracion">3 min</span>
+    </div>
+    <p class="intro-parte">A partir de aquí, todo ocurre en el móvil.</p>
+
+    <ol class="pasos">
+      <li data-n="1">
+        <div class="cuerpo">
+          <p>Abra <b>Chrome</b> en el teléfono y escriba la dirección del paso anterior. Lo más cómodo es enviársela por correo o WhatsApp desde el ordenador.</p>
+        </div>
+      </li>
+      <li data-n="2">
+        <div class="cuerpo">
+          <p>Menú de tres puntos arriba a la derecha → <b>Añadir a pantalla de inicio</b>. En algunas versiones de Chrome aparece como <i>Instalar aplicación</i>.</p>
+        </div>
+      </li>
+      <li data-n="3">
+        <div class="cuerpo">
+          <p>Confirme el nombre. Queda un icono en el escritorio igual que cualquier otra app, y al abrirla desde ahí no se ve la barra del navegador.</p>
+        </div>
+      </li>
+      <li data-n="4">
+        <div class="cuerpo">
+          <p>Ábrala una vez <b>con datos o wifi</b> y deje que cargue del todo. En esa primera apertura se guardan todos los archivos en el teléfono.</p>
+        </div>
+      </li>
+      <li data-n="5">
+        <div class="cuerpo">
+          <p>Pulse <b>Tomar foto con la cámara</b>. Chrome pedirá permiso: acéptelo. Si lo rechazó sin querer, se recupera en Chrome → tres puntos → <i>Configuración</i> → <i>Configuración de sitios</i> → <i>Cámara</i>.</p>
+        </div>
+      </li>
+      <li data-n="6">
+        <div class="cuerpo">
+          <p>Active el <b>modo avión</b> y abra la app otra vez. Debe funcionar igual. Esa es la comprobación de que ya no depende de la red.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="aviso">
+      <p><b>Por qué la dirección tiene que ser la de GitHub y no la de su ordenador.</b> Los navegadores solo dan acceso a la cámara en páginas servidas por HTTPS. Si abre la app desde la IP local del ordenador —algo como <span class="ruta">http://192.168.1.40:8080</span>— funcionará todo menos la cámara. La dirección de GitHub Pages es HTTPS y no tiene ese problema.</p>
+    </div>
+  </section>
+
+  <!-- ============================================ PARTE 5 -->
+  <section>
+    <div class="titulo-parte">
+      <span class="num">05</span>
+      <h2>El APK, si lo prefiere</h2>
+      <span class="duracion">10 min · opcional</span>
+    </div>
+    <p class="intro-parte">Un archivo instalable de Android, útil si el repositorio tiene que ser privado o si quiere repartir la app a compañeros sin darles una dirección web. Con la parte 4 hecha, esto no hace falta.</p>
+
+    <ol class="pasos">
+      <li data-n="1">
+        <div class="cuerpo">
+          <p>Publique una etiqueta de versión. Con Git:</p>
+          <div class="bloque-codigo"><pre><code>git tag v1.1.0
+git push origin v1.1.0</code></pre></div>
+          <p>Por el navegador: en el repositorio, <b>Releases → Create a new release → Choose a tag</b>, escriba <span class="ruta">v1.1.0</span>, y publique.</p>
+        </div>
+      </li>
+      <li data-n="2">
+        <div class="cuerpo">
+          <p>Pestaña <b>Actions</b> → ejecución <i>APK de Android</i>. La primera vez tarda entre cinco y diez minutos porque descarga el SDK de Android.</p>
+        </div>
+      </li>
+      <li data-n="3">
+        <div class="cuerpo">
+          <p>Descargue el archivo <span class="ruta">.apk</span> desde <b>Releases</b>, y pásela al teléfono por correo, cable o Drive.</p>
+        </div>
+      </li>
+      <li data-n="4">
+        <div class="cuerpo">
+          <p>Ábrala desde la app <i>Archivos</i> del teléfono. Android avisará de que viene de un origen desconocido: pulse <b>Configuración</b> en ese mismo aviso, active el permiso, vuelva atrás y pulse <b>Instalar</b>.</p>
+        </div>
+      </li>
+    </ol>
+
+    <div class="aviso">
+      <p><b>Aviso honesto.</b> La compilación del APK no se pudo ejecutar en el entorno donde se escribió la app, porque no tenía acceso al registro de paquetes de npm. La configuración está completa y es la estándar, pero la primera ejecución en GitHub es donde se valida de verdad. Si falla, el registro de la ejecución señala la causa con claridad y suele ser una versión que hay que fijar. La parte 4 no depende de esto.</p>
+      <p>El APK va firmado con la clave de depuración: sirve para instalarlo a mano, pero no para subirlo a Google Play.</p>
+    </div>
+  </section>
+
+  <!-- ============================================ PARTE 6 -->
+  <section>
+    <div class="titulo-parte">
+      <span class="num">06</span>
+      <h2>Actualizar la app más adelante</h2>
+      <span class="duracion">1 min</span>
+    </div>
+
+    <p class="intro-parte">Si cambia algo del proyecto, con Git basta con:</p>
+    <div class="bloque-codigo"><pre><code>git add -A
+git commit -m "lo que haya cambiado"
+git push</code></pre></div>
+    <p>Por el navegador: <b>Add file → Upload files</b> y vuelva a subir los archivos modificados.</p>
+    <p>GitHub republica sola. En el teléfono, la versión nueva entra la <b>segunda</b> vez que abra la app: la primera se descarga en segundo plano. Si quiere forzarlo, ciérrela del todo y ábrala dos veces seguidas.</p>
+  </section>
+
+  <!-- ============================================ PROBLEMAS -->
+  <section>
+    <div class="titulo-parte">
+      <span class="num">07</span>
+      <h2>Si algo no sale</h2>
+    </div>
+
+    <div class="tabla-envoltorio">
+      <table>
+        <thead>
+          <tr><th>Lo que ve</th><th>Qué pasa y cómo se arregla</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pantalla en blanco al abrir <span class="ruta">index.html</span> con doble clic</td>
+            <td>La app está hecha de módulos que el navegador bloquea al abrirlos como archivo suelto. No es un fallo: hay que servirla por web, que es justo lo que hace GitHub Pages.</td>
+          </tr>
+          <tr>
+            <td>Pages dice <i>404</i></td>
+            <td>La publicación aún no ha terminado, o <i>Source</i> no está en <b>GitHub Actions</b>. Revise la pestaña Actions.</td>
+          </tr>
+          <tr>
+            <td>No aparece <i>Añadir a pantalla de inicio</i></td>
+            <td>Tiene que ser Chrome o Edge sobre la dirección HTTPS de GitHub. En Firefox de Android la opción se llama <i>Instalar</i>.</td>
+          </tr>
+          <tr>
+            <td>El botón de la cámara no hace nada</td>
+            <td>Falta el permiso, o la página no está en HTTPS. La app pasa sola al selector de galería, así que siempre puede seguir trabajando con fotos ya hechas.</td>
+          </tr>
+          <tr>
+            <td>Actions falla con error de permisos</td>
+            <td><b>Settings → Actions → General → Workflow permissions</b> → <i>Read and write permissions</i>.</td>
+          </tr>
+          <tr>
+            <td>Pages no está disponible</td>
+            <td>El repositorio es privado, y eso requiere cuenta de pago. Hágalo público en <i>Settings → General → Change visibility</i>, o use el APK.</td>
+          </tr>
+          <tr>
+            <td><span class="ruta">git push</span> rechaza las credenciales</td>
+            <td>GitHub no acepta la contraseña de la cuenta desde la terminal. Hace falta un token de acceso personal (parte 2, camino B, paso 6).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================================ CLÍNICA -->
+  <section>
+    <div class="titulo-parte">
+      <span class="num">08</span>
+      <h2>Para el primer día de consulta</h2>
+    </div>
+    <ul class="limpia">
+      <li>Una <b>regla rígida o cinta métrica</b> que pueda dejar apoyada en el mismo plano que el perro. Sin ella no hay centímetros, ni newtons, ni momentos articulares: solo ángulos y porcentajes.</li>
+      <li>La <b>masa corporal</b> del paciente, de la báscula.</li>
+      <li>Si dispone de ellas, <b>dos o cuatro básculas</b> para el reparto de carga medido. Con dos ya se cubre el reparto torácico frente a pelviano, que es el dato principal.</li>
+      <li>Una <b>cinta métrica flexible</b> para los perímetros torácico y abdominal, que son los que más afinan el reparto de masa en perros obesos, braquicéfalos o con atrofia muscular.</li>
+    </ul>
+  </section>
+
+  <p class="cierre">DempsterCan es una herramienta de apoyo a la valoración funcional veterinaria. No es un producto sanitario certificado, no emite diagnósticos y no sustituye al examen clínico, a la palpación de los reparos anatómicos ni al criterio del médico veterinario.</p>
+
+</div>
+
+<script>
+  // Copiar comandos: en una guía de terminal, un error de tecleo cuesta más
+  // que el propio comando.
+  document.querySelectorAll('.bloque-codigo').forEach((bloque) => {
+    const boton = document.createElement('button');
+    boton.className = 'copiar';
+    boton.type = 'button';
+    boton.textContent = 'Copiar';
+    boton.addEventListener('click', async () => {
+      const texto = bloque.querySelector('code').innerText;
+      let ok = false;
+      try {
+        await navigator.clipboard.writeText(texto);
+        ok = true;
+      } catch {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = texto;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+        } catch { ok = false; }
+      }
+      boton.textContent = ok ? 'Copiado' : 'Seleccione y copie';
+      boton.classList.toggle('ok', ok);
+      setTimeout(() => { boton.textContent = 'Copiar'; boton.classList.remove('ok'); }, 2000);
+    });
+    bloque.appendChild(boton);
+  });
+
+  // Marcar pasos completados. Se guarda en este navegador para poder cerrar la
+  // página, ir al teléfono y volver sin perder el sitio.
+  const CLAVE = 'dempstercan-guia-pasos';
+  let hechos = new Set();
+  try {
+    const guardado = localStorage.getItem(CLAVE);
+    if (guardado) hechos = new Set(JSON.parse(guardado));
+  } catch { /* modo privado o almacenamiento bloqueado: se sigue sin memoria */ }
+
+  document.querySelectorAll('ol.pasos > li').forEach((paso, i) => {
+    const seccion = paso.closest('section');
+    const parte = seccion ? seccion.querySelector('.num').textContent : '0';
+    const id = parte + '-' + i + '-' + paso.dataset.n;
+
+    const boton = document.createElement('button');
+    boton.className = 'marcar';
+    boton.type = 'button';
+    const caja = document.createElement('span');
+    caja.className = 'caja';
+    const etiqueta = document.createElement('span');
+    boton.append(caja, etiqueta);
+
+    const pintar = () => {
+      const listo = hechos.has(id);
+      paso.classList.toggle('hecho', listo);
+      etiqueta.textContent = listo ? 'Hecho' : 'Marcar como hecho';
+      boton.setAttribute('aria-pressed', String(listo));
+    };
+
+    boton.addEventListener('click', () => {
+      hechos.has(id) ? hechos.delete(id) : hechos.add(id);
+      try { localStorage.setItem(CLAVE, JSON.stringify([...hechos])); } catch { /* sin memoria */ }
+      pintar();
+    });
+
+    paso.querySelector('.cuerpo').appendChild(boton);
+    pintar();
+  });
+</script>

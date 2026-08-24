@@ -1,0 +1,33 @@
+{
+  "name": "dempstercan",
+  "version": "1.0.0",
+  "description": "Diagrama de Dempster canino: valoración funcional en estática a partir de una fotografía lateral. PWA sin conexión, empaquetable como APK de Android.",
+  "type": "module",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "test": "node --test test/",
+    "serve": "python3 -m http.server 8080",
+    "build:www": "node tools/build-www.mjs",
+    "android:add": "npm run build:www && npx cap add android && node tools/parche-android.mjs",
+    "android:sync": "npm run build:www && npx cap sync android && node tools/parche-android.mjs",
+    "android:apk": "npm run android:sync && cd android && ./gradlew assembleDebug"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
+    "@capacitor/core": "^7.0.0"
+  },
+  "keywords": [
+    "veterinaria",
+    "fisioterapia",
+    "rehabilitacion",
+    "biomecanica",
+    "canino",
+    "dempster",
+    "centro-de-masa",
+    "goniometria",
+    "pwa",
+    "offline"
+  ]
+}

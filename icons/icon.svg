@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="DempsterCan">
+  <rect width="512" height="512" rx="112" fill="#1c2126"/>
+  <g transform="translate(208,171) scale(160)">
+    <!-- suelo y base de sustentación -->
+    <line x1="-1.15" y1="1.25" x2="1.75" y2="1.25" stroke="#5b6570" stroke-width="0.030" stroke-linecap="round"/>
+    <line x1="-0.06" y1="1.36" x2="0.951" y2="1.36" stroke="#d99a2b" stroke-width="0.055" stroke-linecap="round"/>
+    <!-- cadena axial -->
+    <polyline points="-1.000,-0.120 -0.620,-0.300 0,0 0.550,0.030 0.880,0.020 1.000,0.020 1.600,0.500"
+      fill="none" stroke="#3f6f9e" stroke-width="0.055" stroke-linejoin="round" stroke-linecap="round"/>
+    <line x1="1.000" y1="0.020" x2="1.240" y2="0.140" stroke="#3f6f9e" stroke-width="0.055" stroke-linecap="round"/>
+    <!-- miembro torácico -->
+    <polyline points="0.060,0.020 -0.100,0.305 0.028,0.657 -0.043,1.063 -0.060,1.250"
+      fill="none" stroke="#c96a3f" stroke-width="0.055" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- miembro pelviano -->
+    <polyline points="1.020,0.360 0.833,0.685 1.020,1.010 0.951,1.250"
+      fill="none" stroke="#4a8f6a" stroke-width="0.055" stroke-linejoin="round" stroke-linecap="round"/>
+    <line x1="1.086" y1="0.978" x2="1.020" y2="1.010" stroke="#4a8f6a" stroke-width="0.055" stroke-linecap="round"/>
+    <!-- línea de gravedad -->
+    <line x1="0.375" y1="-0.55" x2="0.375" y2="1.45" stroke="#b03a48" stroke-width="0.036"
+      stroke-dasharray="0.10 0.07" stroke-linecap="round"/>
+    <!-- centro de masa -->
+    <g transform="translate(0.375,0.139)">
+      <circle r="0.135" fill="#ffffff" stroke="#b03a48" stroke-width="0.040"/>
+      <path d="M0,0 L0.135,0 A0.135,0.135 0 0,0 0,-0.135 Z" fill="#b03a48"/>
+      <path d="M0,0 L-0.135,0 A0.135,0.135 0 0,0 0,0.135 Z" fill="#b03a48"/>
+    </g>
+  </g>
+</svg>
