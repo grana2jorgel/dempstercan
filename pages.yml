@@ -1,0 +1,54 @@
+name: Publicar en GitHub Pages
+
+# Deja la app accesible desde el navegador del teléfono. Al abrirla, Chrome
+# ofrece "Añadir a pantalla de inicio": a partir de ahí funciona sin conexión
+# igual que una app instalada, gracias al service worker.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: node --test test/
+
+  publicar:
+    needs: pruebas
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Preparar el sitio
+        run: |
+          mkdir -p _sitio
+          cp -r index.html manifest.webmanifest sw.js css js icons _sitio/
+          # models/ y vendor/ son opcionales: solo existen si se ha instalado un
+          # modelo de detección automática. Su ausencia no debe romper el
+          # despliegue, que es lo que ocurría al subir los archivos a mano.
+          for opcional in models vendor; do
+            if [ -d "$opcional" ]; then cp -r "$opcional" _sitio/; fi
+          done
+          # Evita que Jekyll ignore archivos y carpetas que empiezan por punto
+          touch _sitio/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: _sitio }
+      - id: deployment
+        uses: actions/deploy-pages@v4

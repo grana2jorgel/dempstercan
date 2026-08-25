@@ -1,0 +1,81 @@
+name: APK de Android
+
+# Genera un APK instalable en el teléfono. La app resultante funciona
+# completamente sin conexión: todos los archivos viajan dentro del paquete.
+#
+#   - Cada push a main deja el APK como artefacto de la ejecución.
+#   - Cada etiqueta v* publica además una Release con el APK adjunto.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pruebas del motor de cálculo
+        uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: node --test test/
+
+      - name: Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: SDK de Android
+        uses: android-actions/setup-android@v3
+
+      - name: Dependencias
+        run: npm install --no-audit --no-fund
+
+      - name: Preparar www y proyecto Android
+        run: |
+          npm run build:www
+          npx cap add android
+          npx cap sync android
+          node tools/parche-android.mjs
+
+      - name: Compilar APK de depuración
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Renombrar
+        run: |
+          mkdir -p salida
+          cp android/app/build/outputs/apk/debug/app-debug.apk \
+             salida/DempsterCan-${GITHUB_REF_NAME//\//-}.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DempsterCan-apk
+          path: salida/*.apk
+          retention-days: 90
+
+      - name: Publicar Release en las etiquetas
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: salida/*.apk
+          body: |
+            APK de DempsterCan.
+
+            Instalación: descargue el `.apk` en el teléfono y ábralo.
+            Android pedirá permiso para instalar desde orígenes desconocidos
+            (Ajustes → Aplicaciones → Acceso especial → Instalar apps desconocidas).
+
+            Está firmado con la clave de depuración, así que **no** puede subirse
+            a Google Play tal cual. Para eso hay que firmarlo con una clave propia.
+
+            La app funciona sin conexión y no envía ningún dato a ningún servidor.
