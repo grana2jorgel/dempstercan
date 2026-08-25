@@ -22,8 +22,7 @@
   <div class="acciones">
     <button class="icono" id="btnFoto" title="Cargar o tomar foto">📷</button>
     <button class="icono" id="btnGuardar" title="Guardar caso">💾</button>
-    <button class="icono" id="btnPng" title="Exportar imagen del diagrama">🖼️</button>
-    <button class="icono primaria" id="btnInforme" title="Generar informe">📄</button>
+    <button class="icono primaria" id="btnExportar" title="Exportar y compartir">📤</button>
   </div>
 </header>
 
@@ -188,7 +187,7 @@
       <div class="bloque">
         <h3>Casos y copias de seguridad</h3>
         <div class="fila-botones">
-          <button id="btnExportar" class="btn sec">Exportar todo (JSON)</button>
+          <button id="btnExportarJson" class="btn sec">Exportar todo (JSON)</button>
           <button id="btnImportar" class="btn sec">Importar</button>
         </div>
         <p class="ayuda">Todo se guarda únicamente en este dispositivo. La app nunca envía datos a ningún servidor.</p>
@@ -210,6 +209,36 @@
       <button id="btnNuevo" class="btn ancho">Nuevo caso</button>
     </div>
     <ul class="casos" id="listaCasos"></ul>
+  </div>
+</div>
+
+<!-- Hoja de exportación -->
+<div class="hoja" id="hojaExportar" hidden>
+  <div class="hoja-fondo" data-cerrar-hoja></div>
+  <div class="hoja-panel">
+    <div class="hoja-cab">
+      <strong>Exportar resultados</strong>
+      <button class="icono" data-cerrar-hoja aria-label="Cerrar">✕</button>
+    </div>
+    <ul class="opciones">
+      <li><button data-exportar="ficha">
+        <span class="ico">🖼️</span>
+        <span><b>Ficha de resultados</b><em>Imagen con el diagrama y todas las tablas. Para mandar por mensajería o pegar en la historia clínica.</em></span>
+      </button></li>
+      <li><button data-exportar="word">
+        <span class="ico">📄</span>
+        <span><b>Documento de Word</b><em>Archivo .docx editable, con el diagrama incrustado y las referencias. Se abre en Word, LibreOffice o Google Docs.</em></span>
+      </button></li>
+      <li><button data-exportar="diagrama">
+        <span class="ico">📐</span>
+        <span><b>Solo el diagrama</b><em>Imagen PNG del dibujo, sin tablas.</em></span>
+      </button></li>
+      <li><button data-exportar="pdf">
+        <span class="ico">🖨️</span>
+        <span><b>Informe para imprimir</b><em>Se abre en una pestaña; use «Imprimir → Guardar como PDF».</em></span>
+      </button></li>
+    </ul>
+    <p class="ayuda" style="padding: 0 16px 16px">En el teléfono se abrirá la hoja de compartir de Android; en el ordenador se descargará el archivo.</p>
   </div>
 </div>
 

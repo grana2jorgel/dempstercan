@@ -2,14 +2,14 @@
  * sw.js — Service worker: la app queda utilizable sin conexión.
  * Estrategia: precarga del núcleo + "primero la caché" para todo lo propio.
  */
-const CACHE = 'dempstercan-v2';
+const CACHE = 'dempstercan-v3';
 
 const NUCLEO = [
   './', './index.html', './manifest.webmanifest',
   './css/app.css',
   './js/app.js', './js/params.js', './js/landmarks.js', './js/biomech.js',
   './js/render.js', './js/template.js', './js/autodetect.js', './js/store.js',
-  './js/report.js', './js/camara.js',
+  './js/report.js', './js/camara.js', './js/exportar.js',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png'
 ];
 

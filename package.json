@@ -6,7 +6,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "test": "node --test test/",
+    "test": "node --test test/*.test.mjs",
     "serve": "python3 -m http.server 8080",
     "build:www": "node tools/build-www.mjs",
     "android:add": "npm run build:www && npx cap add android && node tools/parche-android.mjs",

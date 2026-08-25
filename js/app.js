@@ -3,7 +3,7 @@
  */
 
 import { REPAROS, REPAROS_POR_ID, REPAROS_OBLIGATORIOS, ORDEN_MARCADO, CONFORMACIONES, generarPlantilla } from './landmarks.js';
-import { PERFILES, PERIMETROS, ANGULOS_ESTACION, REPARTO_RANGO, ASIMETRIA_NORMAL, DMCI, FUENTES, CDM_REFERENCIA } from './params.js';
+import { PERFILES, PERIMETROS, ANGULOS_ESTACION, REPARTO_RANGO, REPARTO_REFERENCIA, ASIMETRIA_NORMAL, DMCI, FUENTES, CDM_REFERENCIA, LIMITACIONES } from './params.js';
 import { analizar } from './biomech.js';
 import { dibujar, reparoCercano, PALETA } from './render.js';
 import { proyectarPlantilla, plantillaEnRecuadro } from './template.js';
@@ -11,6 +11,7 @@ import * as auto from './autodetect.js';
 import * as store from './store.js';
 import * as camara from './camara.js';
 import { construirInforme, abrirInforme } from './report.js';
+import { construirDocx, fichaResultados, dataUrlABytes, compartirODescargar } from './exportar.js';
 
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
@@ -285,10 +286,31 @@ function finPuntero(e) {
   }
 
   if (S.modo === 'recuadro' && S.recuadro) {
-    const r = S.recuadro;
+    let r = S.recuadro;
+    let porToque = false;
+    // Un toque simple, sin arrastrar, deja un recuadro de tamaño cero. Antes la
+    // app no hacía nada y salía del modo en silencio, que es la peor respuesta
+    // posible: el usuario se queda sin saber si pulsó mal. Ahora se coloca la
+    // plantilla centrada en el punto tocado, ocupando la mayor parte de la
+    // imagen, y ya se ajusta arrastrando los puntos.
+    if (Math.abs(r.x1 - r.x0) < 12 || Math.abs(r.y1 - r.y0) < 12) {
+      const t = tamImagen();
+      const ancho = t.w * 0.80, alto = t.h * 0.62;
+      const cx = Math.min(Math.max(r.x0, ancho / 2), t.w - ancho / 2);
+      const cy = Math.min(Math.max(r.y0, alto / 2), t.h - alto / 2);
+      r = { x0: cx - ancho / 2, y0: cy - alto / 2, x1: cx + ancho / 2, y1: cy + alto / 2 };
+      porToque = true;
+    }
     const pts = plantillaEnRecuadro(r.x0, r.y0, r.x1, r.y1, S.espejo, S.caso.conformacion);
     S.recuadro = null; S.modo = 'marcar';
-    if (pts) { S.caso.puntos = pts; S.caso.guardado = false; brindis('Plantilla colocada. Arrastre cada punto hasta el reparo palpado.'); }
+    if (pts) {
+      S.caso.puntos = pts; S.caso.guardado = false;
+      brindis(porToque
+        ? 'Plantilla colocada a ojo. Arrastre cada punto hasta el reparo palpado.'
+        : 'Plantilla colocada. Arrastre cada punto hasta el reparo palpado.');
+    } else {
+      brindis('No se pudo colocar la plantilla. Inténtelo de nuevo.');
+    }
     pintarLista(); recalcular(); pintar(); S.arrastrando = null; return;
   }
 
@@ -641,12 +663,16 @@ async function comprobarModelo() {
   if (r.disponible) {
     el.innerHTML = `Modelo instalado: <b>${r.cfg.nombre || r.cfg.archivo}</b>. La red coloca ${Object.keys(r.cfg.mapeo || {}).length} reparos aproximados; el resto se deduce por plantilla. <b>Todos deben corregirse a mano.</b>`;
   } else {
-    el.innerHTML = `No hay ningún modelo de red neuronal instalado, y la app funciona igual sin él.
-      Ningún conjunto de datos público de pose animal anota los reparos óseos que exige la goniometría canina
-      (falta escápula, epicóndilos, trocánter, maléolo, calcáneo…), así que la detección automática siempre
-      es un punto de partida, nunca una medición. Use <b>Colocar plantilla</b> y corrija arrastrando.
-      Para instalar un modelo consulte <code>tools/preparar_modelo.py</code> en el repositorio.`;
-    $('#btnAuto').disabled = true;
+    el.innerHTML = `<b>La detección por red neuronal no está instalada</b>, y la app funciona igual sin ella:
+      use <b>Colocar plantilla</b> y corrija los puntos arrastrando.
+      <br><br>No es un fallo. Ningún conjunto de datos público de pose animal anota los reparos óseos que exige
+      la goniometría canina —faltan escápula, epicóndilos, trocánter, maléolo y calcáneo—, así que una red
+      solo daría un punto de partida aproximado, nunca una medición. Para instalarla de todos modos, consulte
+      <code>tools/preparar_modelo.py</code> en el repositorio.`;
+    const b = $('#btnAuto');
+    b.disabled = true;
+    b.textContent = 'Detección automática · no instalada';
+    b.title = 'Requiere instalar un modelo ONNX. Vea tools/preparar_modelo.py.';
   }
 }
 
@@ -766,7 +792,7 @@ $('#btnNuevo').onclick = () => {
 $('#btnMenu').onclick = () => { $('#cajon').hidden = false; pintarCasos(); };
 $$('[data-cerrar]').forEach(el => el.onclick = () => $('#cajon').hidden = true);
 
-$('#btnExportar').onclick = async () => {
+$('#btnExportarJson').onclick = async () => {
   const txt = await store.exportarTodo();
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([txt], { type: 'application/json' }));
@@ -798,23 +824,72 @@ function lienzoDiagrama(escalaSalida = 2) {
   return c;
 }
 
-$('#btnPng').onclick = () => {
-  const c = lienzoDiagrama(2);
-  c.toBlob(b => {
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(b);
-    a.download = `diagrama-${(S.caso.ficha.paciente || 'caso').replace(/\s+/g, '_')}.png`;
-    a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  }, 'image/png');
-};
+const REFERENCIAS_EXPORT = { ANGULOS_ESTACION, REPARTO_REFERENCIA, LIMITACIONES, FUENTES, CDM_REFERENCIA };
 
-$('#btnInforme').onclick = () => {
+const nombreArchivo = (ext) =>
+  `dempstercan-${(S.caso.ficha.paciente || 'caso').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w-]+/g, '_')}-${S.caso.fecha || 'sin-fecha'}.${ext}`;
+
+function aBlob(lienzo, tipo = 'image/png', calidad) {
+  return new Promise(res => lienzo.toBlob(res, tipo, calidad));
+}
+
+$('#btnExportar').onclick = () => {
   leerFormulario();
-  if (!S.analisis) { brindis('Marque al menos los dos apoyos antes de generar el informe.'); return; }
-  const img = lienzoDiagrama(1.6).toDataURL('image/jpeg', 0.88);
-  const html = construirInforme({ caso: S.caso, analisis: S.analisis, imagenDataUrl: img });
-  if (!abrirInforme(html)) brindis('El navegador bloqueó la ventana; se ha descargado el informe como archivo.');
+  if (!S.analisis) { brindis('Marque al menos los dos apoyos antes de exportar.'); return; }
+  $('#hojaExportar').hidden = false;
 };
+$$('[data-cerrar-hoja]').forEach(el => el.onclick = () => $('#hojaExportar').hidden = true);
+
+$$('[data-exportar]').forEach(boton => boton.onclick = async () => {
+  const que = boton.dataset.exportar;
+  $('#hojaExportar').hidden = true;
+  if (!S.analisis) { brindis('No hay resultados que exportar todavía.'); return; }
+
+  try {
+    if (que === 'diagrama') {
+      const blob = await aBlob(lienzoDiagrama(2));
+      const r = await compartirODescargar(blob, nombreArchivo('png'), 'Diagrama de Dempster');
+      if (r !== 'cancelado') brindis(r === 'compartido' ? 'Diagrama compartido.' : 'Diagrama descargado.');
+      return;
+    }
+
+    if (que === 'ficha') {
+      brindis('Componiendo la ficha…');
+      const ficha = fichaResultados({
+        caso: S.caso, analisis: S.analisis,
+        lienzoDiagrama: lienzoDiagrama(1.5),
+        referencias: REFERENCIAS_EXPORT
+      });
+      const blob = await aBlob(ficha);
+      const r = await compartirODescargar(blob, nombreArchivo('png'), 'Ficha de resultados');
+      if (r !== 'cancelado') brindis(r === 'compartido' ? 'Ficha compartida.' : 'Ficha descargada.');
+      return;
+    }
+
+    if (que === 'word') {
+      brindis('Generando el documento…');
+      const lienzoDia = lienzoDiagrama(1.5);
+      const url = lienzoDia.toDataURL('image/png');
+      const blob = construirDocx({
+        caso: S.caso, analisis: S.analisis,
+        imagenPng: { datos: dataUrlABytes(url), ancho: lienzoDia.width, alto: lienzoDia.height },
+        referencias: REFERENCIAS_EXPORT
+      });
+      const r = await compartirODescargar(blob, nombreArchivo('docx'), 'Informe de valoración funcional');
+      if (r !== 'cancelado') brindis(r === 'compartido' ? 'Documento compartido.' : 'Documento descargado. Ábralo con Word.');
+      return;
+    }
+
+    if (que === 'pdf') {
+      const img = lienzoDiagrama(1.6).toDataURL('image/jpeg', 0.88);
+      const html = construirInforme({ caso: S.caso, analisis: S.analisis, imagenDataUrl: img });
+      if (!abrirInforme(html)) brindis('El navegador bloqueó la ventana; se ha descargado el informe como archivo.');
+    }
+  } catch (e) {
+    console.warn(e);
+    brindis('No se pudo generar el archivo: ' + e.message);
+  }
+});
 
 /* =================================================================== */
 /* Varios                                                              */

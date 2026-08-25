@@ -30,7 +30,7 @@ Android**. Nada sale del dispositivo.
 | **Momentos externos** | Equilibrio del sólido libre distal a cada articulación, con el peso de los segmentos distales incluido. |
 | **Incertidumbre** | Monte Carlo sobre las desviaciones estándar publicadas → IC 95 % del reparto de carga. |
 | **Reparto medido** | Si tiene básculas o plataforma de presión, entra la medición real y se calculan los índices de simetría de Alves et al. 2024. |
-| **Informe** | HTML imprimible → «Guardar como PDF» del propio teléfono. Con tablas, fuentes y limitaciones declaradas. |
+| **Exportar** | Cuatro salidas desde un mismo botón: **ficha de resultados en imagen** (diagrama + todas las tablas, para mensajería o historia clínica), **documento de Word (.docx)** editable con el diagrama incrustado, PNG solo del diagrama, e informe imprimible → PDF. En el teléfono abre la hoja de compartir de Android. |
 | **Historial** | Casos en IndexedDB, exportables a JSON. Solo en el dispositivo. |
 
 ---
@@ -56,7 +56,7 @@ instalada y sigue funcionando en modo avión: el service worker guarda todo.
 ```bash
 git clone https://github.com/USUARIO/dempstercan.git
 cd dempstercan
-npm test              # 37 pruebas del motor de cálculo
+npm test              # 42 pruebas: motor de cálculo y exportación
 python3 -m http.server 8080
 # abra http://localhost:8080
 ```
@@ -278,7 +278,7 @@ ningún peso** en este repositorio por licencias.
 
 ## Validación del motor de cálculo
 
-`npm test` ejecuta 37 pruebas. Además de las de consistencia interna
+`npm test` ejecuta 42 pruebas. Además de las de consistencia interna
 (equilibrio de momentos, invarianza a escala, rotación y espejo, cierre de la
 tabla de masas), hay tres de **validación externa** contra mediciones publicadas
 que el modelo no conoce:
@@ -310,8 +310,9 @@ js/camara.js          captura con guías de encuadre, silueta y nivel
 js/autodetect.js      ONNX Runtime Web: SimCC y heatmaps, con subpíxel
 js/store.js           IndexedDB
 js/report.js          informe imprimible
+js/exportar.js        .docx sin librerías (escritor de ZIP + OOXML) y ficha en imagen
 sw.js                 service worker: funcionamiento sin conexión
-test/                 37 pruebas, node:test, sin dependencias
+test/                 42 pruebas, node:test, sin dependencias
 tools/preparar_modelo.py   descarga, exporta y cuantiza el modelo ONNX
 tools/parche-android.mjs   declara el permiso de cámara en el APK
 ```
