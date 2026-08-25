@@ -4,7 +4,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { PLANTILLA, ARTICULACIONES } from '../js/landmarks.js';
+import { PLANTILLA, ARTICULACIONES, REPAROS_OBLIGATORIOS } from '../js/landmarks.js';
 import { SEGMENTOS } from '../js/params.js';
 import {
   anguloArticular, marcoReferencia, centroDeMasa, estatica, analizar,
@@ -404,4 +404,34 @@ test('un perímetro plausible no genera aviso', () => {
   assert.ok(t.morfo.perimetroRefCm > 20 && t.morfo.perimetroRefCm < 140,
     `perímetro torácico de referencia irreal: ${t.morfo.perimetroRefCm}`);
   assert.ok(ref);
+});
+
+/* ------------------------------------------------------------------ */
+/* Representación: el cinturón pelviano debe cerrar sobre el trocánter */
+/* ------------------------------------------------------------------ */
+
+import { CADENAS } from '../js/landmarks.js';
+
+test('la pelvis se dibuja como triángulo sacro–isquion–trocánter', () => {
+  const pelvis = CADENAS.find(c => c.id === 'pelvis');
+  assert.ok(pelvis, 'no existe la cadena pélvica');
+  assert.deepEqual(pelvis.puntos, ['sacro', 'isquion', 'trocanter']);
+  assert.equal(pelvis.cerrada, true, 'el triángulo debe cerrarse');
+});
+
+test('ningún reparo marcado queda fuera del dibujo', () => {
+  // Todo reparo obligatorio tiene que aparecer en alguna cadena; si no, el
+  // usuario lo coloca y no ve ninguna línea que lo use. Es lo que le pasaba al
+  // isquion antes de cerrar el triángulo pélvico.
+  const enCadenas = new Set(CADENAS.flatMap(c => c.puntos));
+  const sueltos = REPAROS_OBLIGATORIOS.filter(id => !enCadenas.has(id));
+  assert.deepEqual(sueltos, [], 'reparos sin representar: ' + sueltos.join(', '));
+});
+
+test('el trocánter enlaza la pelvis con el miembro pelviano', () => {
+  const pelvis = CADENAS.find(c => c.id === 'pelvis');
+  const miembro = CADENAS.find(c => c.id === 'pelviano');
+  const comun = pelvis.puntos.filter(p => miembro.puntos.includes(p));
+  assert.ok(comun.includes('trocanter'),
+    'el miembro pelviano quedaría suelto respecto al esqueleto axial');
 });

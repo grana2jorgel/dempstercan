@@ -117,12 +117,21 @@ export function dibujar(ctx, o) {
   if (op.esqueleto) {
     ctx.save(); ctx.lineCap = 'round'; ctx.lineJoin = 'round';
     for (const c of CADENAS) {
+      // Una cadena cerrada solo tiene sentido con todos sus vértices: si falta
+      // uno se dibuja abierta, para no inventar un lado que no está marcado.
+      const completos = c.puntos.every(id => p[id]);
       const pts = c.puntos.map(id => p[id]).filter(Boolean);
       if (pts.length < 2) continue;
-      ctx.strokeStyle = PALETA[c.color]; ctx.lineWidth = 3 * esc;
-      ctx.globalAlpha = 0.92;
       ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
       for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
+      if (c.cerrada && completos && pts.length > 2) ctx.closePath();
+      if (c.relleno && c.cerrada && completos && pts.length > 2) {
+        ctx.globalAlpha = 0.14;
+        ctx.fillStyle = PALETA[c.color];
+        ctx.fill();
+      }
+      ctx.globalAlpha = 0.92;
+      ctx.strokeStyle = PALETA[c.color]; ctx.lineWidth = 3 * esc;
       ctx.stroke();
     }
     ctx.restore();
@@ -215,10 +224,10 @@ export function dibujar(ctx, o) {
     const datos = [
       { punto: p.metacarpo, pct: medido ? medido.toracicoPct : R.estatica.cargaToracicaPct,
         kg: R.masaKg ? (medido ? medido.toracicoPct / 100 : R.estatica.cargaToracicaPct / 100) * R.masaKg : null,
-        color: PALETA.toracico, txt: 'Torácicos' },
+        color: PALETA.toracico, txt: 'Torácicos', hacia: -1 },
       { punto: p.metatarso, pct: medido ? medido.pelvianoPct : R.estatica.cargaPelvianaPct,
         kg: R.masaKg ? (medido ? medido.pelvianoPct / 100 : R.estatica.cargaPelvianaPct / 100) * R.masaKg : null,
-        color: PALETA.pelviano, txt: 'Pelvianos' }
+        color: PALETA.pelviano, txt: 'Pelvianos', hacia: 1 }
     ];
     const maxLargo = 120 * esc;
     ctx.save();
@@ -230,7 +239,14 @@ export function dibujar(ctx, o) {
       ctx.beginPath(); ctx.moveTo(d.punto[0], d.punto[1]); ctx.lineTo(tip[0], tip[1]); ctx.stroke();
       ctx.globalAlpha = 1;
       const t = d.kg !== null ? `${d.txt} ${d.pct.toFixed(1)} % · ${d.kg.toFixed(1)} kg` : `${d.txt} ${d.pct.toFixed(1)} %`;
-      if (op.etiquetas) etiqueta(ctx, t, tip[0], tip[1] - 12 * esc, { align: 'center', size: 12 * esc, color: d.color, bold: true });
+      // La etiqueta se aparta del miembro hacia fuera de la base de
+      // sustentación: encima del vector chocaba con el arco del ángulo distal.
+      const fuera = 44 * esc * d.hacia;
+      const lx = tip[0] + marco.ejeS[0] * fuera;
+      const ly = tip[1] + marco.ejeS[1] * fuera - 10 * esc;
+      if (op.etiquetas) etiqueta(ctx, t, lx, ly, {
+        align: d.hacia < 0 ? 'right' : 'left', size: 12 * esc, color: d.color, bold: true
+      });
     }
     ctx.restore();
   }

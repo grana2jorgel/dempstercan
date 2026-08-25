@@ -53,10 +53,19 @@ export const REPAROS = [
 export const REPAROS_POR_ID = Object.fromEntries(REPAROS.map(r => [r.id, r]));
 export const REPAROS_OBLIGATORIOS = REPAROS.filter(r => !r.opcional).map(r => r.id);
 
-/** Cadena esquelética para el dibujo. */
+/**
+ * Cadenas esqueléticas para el dibujo.
+ *
+ * La pelvis se representa como el triángulo tuber sacrale – tuber ischiadicum –
+ * trocánter mayor, que es como se dibuja el cinturón pelviano en cinemática
+ * canina y lo que hace visible el eje sobre el que se mide el ángulo
+ * coxofemoral. Sin él, el trocánter quedaba suelto y el miembro pelviano
+ * parecía no estar unido a nada, mientras que el torácico sí mostraba su
+ * enlace (espina escapular → tubérculo mayor).
+ */
 export const CADENAS = [
   { id: 'axial',    color: 'axial',    puntos: ['hocico', 'occipucio', 't1', 't13', 'l7', 'sacro', 'colaPunta'] },
-  { id: 'pelvis',   color: 'axial',    puntos: ['sacro', 'isquion'] },
+  { id: 'pelvis',   color: 'pelviano', puntos: ['sacro', 'isquion', 'trocanter'], cerrada: true, relleno: true },
   { id: 'toracico', color: 'toracico', puntos: ['escapulaDorsal', 'hombro', 'codo', 'carpo', 'metacarpo'] },
   { id: 'pelviano', color: 'pelviano', puntos: ['trocanter', 'rodilla', 'tarso', 'metatarso'] },
   { id: 'calcaneo', color: 'pelviano', puntos: ['calcaneo', 'tarso'] }

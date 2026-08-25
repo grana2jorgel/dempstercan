@@ -244,6 +244,21 @@ o decrece. El signo resultante, combinado con el del momento, indica si el
 momento externo tiende a flexionar o a extender **en la postura concreta que se
 ha marcado**.
 
+## 6 bis. Representación del cinturón pelviano
+
+La pelvis se dibuja como el triángulo **tuber sacrale – tuber ischiadicum –
+trocánter mayor**, relleno en semitransparencia. No es decorativo: es el eje
+sobre el que se mide el ángulo coxofemoral, y sin él el trocánter aparecía
+suelto y el miembro pelviano parecía no estar unido al esqueleto axial,
+mientras que el torácico sí mostraba su enlace (espina escapular → tubérculo
+mayor).
+
+El triángulo solo se cierra cuando sus tres vértices están marcados; si falta
+alguno se dibuja abierto, para no insinuar un lado que el usuario no ha
+colocado. Hay una prueba que comprueba que **ningún reparo obligatorio queda
+fuera de alguna cadena de dibujo**: marcar un punto y no ver ninguna línea que
+lo use es exactamente el fallo que tenía el isquion.
+
 ## 7. Línea de gravedad
 
 La vertical que pasa por el centro de masa global. Para cada articulación se
