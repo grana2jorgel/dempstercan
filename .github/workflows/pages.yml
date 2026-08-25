@@ -1,1 +1,35 @@
-
+name: Publicar en GitHub Pages
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Pruebas del motor de calculo
+        run: if [ -d test ]; then node --test test/; else echo "sin carpeta test"; fi
+      - uses: actions/configure-pages@v5
+      - name: Preparar el sitio
+        run: |
+          mkdir -p _sitio
+          cp -r index.html manifest.webmanifest sw.js css js icons _sitio/
+          if [ -d models ]; then cp -r models _sitio/; fi
+          if [ -d vendor ]; then cp -r vendor _sitio/; fi
+          touch _sitio/.nojekyll
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _sitio
+      - id: deployment
+        uses: actions/deploy-pages@v4
