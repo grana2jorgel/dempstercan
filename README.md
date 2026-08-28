@@ -56,7 +56,7 @@ instalada y sigue funcionando en modo avión: el service worker guarda todo.
 ```bash
 git clone https://github.com/USUARIO/dempstercan.git
 cd dempstercan
-npm test              # 42 pruebas: motor de cálculo y exportación
+npm test              # 57 pruebas: motor de cálculo y exportación
 python3 -m http.server 8080
 # abra http://localhost:8080
 ```
@@ -92,9 +92,11 @@ lo hace solo en cada push, sin instalar nada en su máquina.
    el encuadre una regla o cinta métrica **en el mismo plano que el perro**: sin
    ella no habrá centímetros, ni newtons, ni momentos.
    También puede pulsar **Subir desde galería** si ya tiene la foto hecha.
-2. **Conformación y plantilla.** Elija el tipo más parecido (mesomorfo,
-   condrodistrófico, lebrel, molosoide o gigante) y dibuje un recuadro alrededor
-   del perro; aparecen los 18 reparos en una posición de partida razonable.
+2. **Conformación y plantilla.** Elija el tipo más parecido —toy, pequeño,
+   mesomorfo, gigante, condrodistrófico, molosoide o lebrel— y dibuje un
+   recuadro alrededor del perro; aparecen los 18 reparos en una posición de
+   partida razonable. Un Chihuahua va en **toy**, no en condrodistrófico: sus
+   huesos largos son normales, solo que pequeños.
 3. **Corregir arrastrando.** Este es el paso que importa. Toque cada reparo de
    la lista, lea la guía anatómica y colóquelo donde lo ha **palpado**. La lupa
    circular aparece mientras arrastra para afinar al píxel.
@@ -183,13 +185,15 @@ Dos propiedades hacen que esto sea defendible:
 
 Lo que produce en la práctica, con un perro de 20 kg de cada tipo:
 
-| Conformación | Tórax | Muslos (×2) | Carga torácica | Desviación |
-|---|---|---|---|---|
-| Mesomorfo (= referencia) | 38,1 % | 9,0 % | 58,9 % | 0 % |
-| Condrodistrófico | 43,8 % | 6,3 % | 55,8 % | 48 % |
-| Lebrel | 33,5 % | 10,4 % | 63,0 % | 13 % |
-| Molosoide | 44,3 % | 8,1 % | 52,5 % | 22 % |
-| Gigante | 36,2 % | 10,1 % | 61,1 % | 10 % |
+| Conformación | Tórax | Carga torácica | Desviación |
+|---|---|---|---|
+| Mesomorfo (= referencia) | 38,1 % | 58,9 % | 0 % |
+| Toy (Chihuahua, Yorkshire) | 40,4 % | 55,9 % | 12 % |
+| Pequeño (Jack Russell, Beagle) | 39,1 % | 57,4 % | 5 % |
+| Condrodistrófico | 43,8 % | 55,8 % | 48 % |
+| Molosoide | 44,3 % | 52,5 % | 22 % |
+| Lebrel | 33,5 % | 63,0 % | 13 % |
+| Gigante | 36,2 % | 61,1 % | 10 % |
 
 El Teckel gana masa troncal y pierde masa apendicular; el Galgo hace lo
 contrario. La app informa siempre de la **desviación de conformación** respecto
@@ -278,7 +282,7 @@ ningún peso** en este repositorio por licencias.
 
 ## Validación del motor de cálculo
 
-`npm test` ejecuta 42 pruebas. Además de las de consistencia interna
+`npm test` ejecuta 57 pruebas. Además de las de consistencia interna
 (equilibrio de momentos, invarianza a escala, rotación y espejo, cierre de la
 tabla de masas), hay tres de **validación externa** contra mediciones publicadas
 que el modelo no conoce:
@@ -312,7 +316,7 @@ js/store.js           IndexedDB
 js/report.js          informe imprimible
 js/exportar.js        .docx sin librerías (escritor de ZIP + OOXML) y ficha en imagen
 sw.js                 service worker: funcionamiento sin conexión
-test/                 42 pruebas, node:test, sin dependencias
+test/                 57 pruebas, node:test, sin dependencias
 tools/preparar_modelo.py   descarga, exporta y cuantiza el modelo ONNX
 tools/parche-android.mjs   declara el permiso de cámara en el APK
 ```

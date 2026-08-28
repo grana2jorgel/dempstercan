@@ -1,0 +1,12 @@
+node_modules/
+www/
+android/
+ios/
+models/pose.onnx
+models/pose_fp32.onnx
+models/modelo.json
+vendor/ort/
+*.apk
+*.aab
+.DS_Store
+/tmp/
