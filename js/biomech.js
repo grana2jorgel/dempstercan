@@ -353,6 +353,38 @@ export function estatica(p, cdm, marco, masaKg, pxPorCm) {
   };
 }
 
+/**
+ * Posición del centro de masa respecto al CODO, que es el reparo con el que la
+ * clínica sitúa el centro de gravedad de memoria: «aproximadamente proximal y
+ * caudal al codo», a la altura de la apófisis xifoides.
+ *
+ * No es un parámetro del modelo: es una lectura del resultado, para que el
+ * explorador pueda comprobar de un vistazo que el marcado tiene sentido.
+ */
+export function referenciaCodo(p, cdm, marco, pxPorCm) {
+  if (!p.codo || !marco) return null;
+  const lC = marco.aLocal(cdm), lE = marco.aLocal(p.codo);
+  const or = orientacionSagital(p);
+  const caudalPx = or * (lC[0] - lE[0]);   // positivo = el CdM está caudal al codo
+  const dorsalPx = lC[1] - lE[1];          // positivo = el CdM está por encima
+  const cm = (px) => (pxPorCm ? px / pxPorCm : null);
+
+  // Normalizado por la longitud dorsal del tronco, que es lo que permite
+  // comparar perros de tallas distintas.
+  const tronco = (p.t1 && p.sacro) ? norm(sub(p.sacro, p.t1)) : null;
+
+  return {
+    caudalPx, dorsalPx,
+    caudalCm: cm(caudalPx), dorsalCm: cm(dorsalPx),
+    caudalEnTroncos: tronco ? caudalPx / tronco : null,
+    dorsalEnTroncos: tronco ? dorsalPx / tronco : null,
+    esCaudal: caudalPx > 0,
+    esProximal: dorsalPx > 0,
+    coherente: caudalPx > 0 && dorsalPx > 0,
+    nota: 'Regla clínica clásica: el centro de gravedad del perro en estación queda proximal y caudal al codo, aproximadamente a la altura de la apófisis xifoides. Es una comprobación cualitativa del marcado, no un criterio de normalidad.'
+  };
+}
+
 /** Medidas morfométricas derivadas de los reparos. */
 export function morfometria(p, marco, pxPorCm) {
   const cm = (px) => (pxPorCm ? px / pxPorCm : null);
@@ -569,6 +601,7 @@ export function analizar(caso) {
   const morf = morfometria(p, marco, pxPorCm);
   const ang = calcularAngulos(p, marco);
   const lg = lineaDeGravedad(p, cm.cdm, marco, pxPorCm);
+  const codo = referenciaCodo(p, cm.cdm, marco, pxPorCm);
   const medido = caso.cargasMedidas ? repartoMedido(caso.cargasMedidas) : null;
 
   // Las cargas por miembro para los momentos salen de la medición real cuando
@@ -620,12 +653,40 @@ export function analizar(caso) {
   } else {
     avisos.push('Perfil de tabla fija: las fracciones de masa se aplican tal cual se publicaron, sin adaptarlas a la conformación de este paciente. Válido solo si el perro es mesomorfo de talla grande. Para cualquier otra conformación use el perfil morfométrico.');
   }
+  // Apuntar a la referencia publicada más comparable según la talla: en razas
+  // pequeñas el contraste útil es Linder 2021, no las medias de razas grandes.
+  if (masaKg && est.cargaToracicaPct !== null) {
+    if (masaKg < 15) {
+      avisos.push(`Paciente de ${masaKg} kg. La referencia publicada más comparable es la de razas pequeñas (Linder 2021: 63 ± 3 % torácico con básculas, 68 ± 4 % con pasarela de presión, n = 25, 11,5 ± 3,6 kg), no las medias de Labrador o Pastor Alemán. Recuerde además que no existen parámetros inerciales caninos publicados por debajo de 10 kg: en esta talla el modelo morfométrico interpola por geometría.`);
+    } else if (masaKg > 40) {
+      avisos.push(`Paciente de ${masaKg} kg, por encima de las poblaciones de las que proceden los parámetros inerciales (Pastor Alemán 36,8 kg, Labrador). El modelo morfométrico adapta el reparto por geometría, pero la extrapolación es mayor de lo habitual.`);
+    }
+  }
+  // La cabeza es el segmento peor servido por un modelo de sección uniforme, y
+  // en razas toy y braquicéfalas es además el que más masa aporta de más.
+  const confBraqui = ['toy', 'molosoide'].includes(caso.conformacion);
+  if (cm.modo === 'morfometrico' && (confBraqui || (masaKg && masaKg < 6))) {
+    avisos.push('En razas toy y braquicéfalas la cabeza es corta pero voluminosa, y el modelo la ajusta por longitud, así que probablemente le asigne MENOS masa de la real. Amit et al. (2009) midieron 9,2 % de masa craneal en mestizos frente al 7,70 % del Pastor Alemán. Téngalo en cuenta al interpretar el reparto: una cabeza infravalorada desplaza el resultado hacia el tren posterior.');
+  }
   if (!calibrado) avisos.push('Sin calibración de escala: no se calculan longitudes en cm, fuerzas ni momentos articulares.');
   if (!masaKg) avisos.push('Sin masa corporal: las cargas se expresan solo en porcentaje.');
   if (Math.abs(marco.inclinacionSuelo) > 8 && caso.referencia !== 'imagen') {
     avisos.push(`La línea entre apoyos está inclinada ${marco.inclinacionSuelo.toFixed(1)}° respecto a la horizontal de la imagen. Se ha usado esa línea como suelo; compruebe que el perro está sobre superficie plana y que la cámara estaba perpendicular al plano sagital.`);
   }
   if (!est.dentroDeBase) avisos.push('La línea de gravedad cae FUERA de la base de sustentación torácico-pelviana. Revise el marcado de los apoyos antes de interpretar el reparto de carga.');
+
+  // Comprobaciones de coherencia con lo que se espera de un perro en estación.
+  // No corrigen nada: avisan de que el marcado probablemente esté mal, que es
+  // la causa mucho más frecuente que una biomecánica realmente extraña.
+  if (est.cargaToracicaPct !== null && (est.cargaToracicaPct < 50 || est.cargaToracicaPct > 78)) {
+    avisos.push(`El reparto calculado (${est.cargaToracicaPct.toFixed(1)} % torácico) queda fuera de lo que se ha descrito en perros, sanos o cojos. La causa habitual no es el perro sino el marcado: revise sobre todo los dos apoyos, la cruz y la posición de la cabeza, que es el segmento que más desplaza el centro de masa.`);
+  }
+  if (codo && !codo.coherente) {
+    const donde = [];
+    if (!codo.esCaudal) donde.push('craneal al codo en vez de caudal');
+    if (!codo.esProximal) donde.push('por debajo del codo en vez de por encima');
+    avisos.push(`El centro de masa ha salido ${donde.join(' y ')}. En un perro en estación se espera proximal y caudal al codo, hacia la apófisis xifoides. Compruebe el marcado del codo, de la cabeza y de los dos apoyos.`);
+  }
   if (!p.colaPunta) avisos.push('Cola no marcada: el segmento cola (0,80 % de la masa) se ha omitido y el resto se ha renormalizado.');
   if (!p.hocico) avisos.push('Hocico no marcado: el segmento cabeza (7,70 % de la masa) se ha omitido y el resto se ha renormalizado. La cabeza es el segmento con mayor influencia sobre el reparto torácico; márquela siempre que pueda.');
   if (medido && est.cargaToracicaPct !== null) {
@@ -638,7 +699,7 @@ export function analizar(caso) {
     fecha: caso.fecha || null,
     marco, pxPorCm, calibrado, masaKg,
     centroDeMasa: cm, estatica: est, morfometria: morf,
-    angulos: ang, lineaGravedad: lg, momentos: mom, origenCargas,
+    angulos: ang, lineaGravedad: lg, referenciaCodo: codo, momentos: mom, origenCargas,
     incertidumbre: inc, repartoMedido: medido, avisos
   };
 }

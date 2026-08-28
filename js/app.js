@@ -108,7 +108,7 @@ function recalcular() {
         puntos: p, masaKg: S.caso.masaKg, calibracion: S.caso.calibracion,
         perfil: S.caso.perfil, referencia: S.caso.referencia,
         cargasMedidas: S.caso.cargasMedidas, perimetros: S.caso.perimetros,
-        lado: S.caso.ficha.lado, fecha: S.caso.fecha
+        conformacion: S.caso.conformacion, lado: S.caso.ficha.lado, fecha: S.caso.fecha
       });
     } catch (e) { console.warn(e); }
   }
@@ -422,6 +422,15 @@ function pintarResultados() {
     html += `<div class="nota ${dentro ? 'ok' : ''}">Comprobación de coherencia del modelo: el centro de masa queda
       <b>${n1(d, ' cm')}</b> por debajo de la cruz. Johnson et al. (2022) midieron ${n1(r.media, ' cm')} ± ${n1(r.sd)}
       en 31 perros de 6,5 a 60 kg. ${CDM_REFERENCIA.aviso}</div>`;
+  }
+
+  if (R.referenciaCodo && R.referenciaCodo.caudalCm !== null) {
+    const c = R.referenciaCodo;
+    html += `<div class="nota ${c.coherente ? 'ok' : 'critica'}">Respecto al <b>codo</b>, el centro de masa queda
+      <b>${n1(Math.abs(c.caudalCm), ' cm')} ${c.esCaudal ? 'caudal' : 'CRANEAL'}</b> y
+      <b>${n1(Math.abs(c.dorsalCm), ' cm')} ${c.esProximal ? 'proximal' : 'DISTAL'}</b>.
+      La regla clínica clásica lo sitúa proximal y caudal al codo, hacia la apófisis xifoides.
+      Es una comprobación del marcado, no un criterio de normalidad.</div>`;
   }
 
   html += `<div class="nota">Rango de medias publicadas en perros sanos: <b>${n1(REPARTO_RANGO.min)}–${n1(REPARTO_RANGO.max)} %</b> torácico

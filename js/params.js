@@ -170,6 +170,13 @@ export const REFERENCIA_MORFOMETRICA = {
  */
 export const PERIMETROS = [
   { id: 'torax',     nombre: 'Perímetro torácico',  guia: 'Justo detrás del codo, con el perro de pie y al final de una espiración normal.' },
+  // NO se ofrece perímetro craneal. Se probó y hay que descartarlo: el modelo
+  // trata cada segmento como un sólido de sección uniforme, y la cabeza es el
+  // que más se estrecha hacia el hocico. Medir el cráneo por su parte más
+  // ancha y aplicar esa sección a toda la longitud del segmento daba un 18 %
+  // de masa craneal en un Chihuahua, cuando Amit et al. (2009) midieron 9,2 %
+  // en mestizos. El sesgo no es del dato del usuario sino de la hipótesis
+  // geométrica, así que la app avisa del asunto en vez de fingir que lo corrige.
   { id: 'abdomen',   nombre: 'Perímetro abdominal', guia: 'En el punto más estrecho, delante de las alas del ilion.' },
   { id: 'cuello',    nombre: 'Perímetro del cuello',guia: 'En el tercio medio del cuello, sin comprimir.' },
   { id: 'muslo',     nombre: 'Perímetro del muslo', guia: 'En el punto de mayor masa muscular, con el miembro en apoyo. Repítalo en los dos lados: la diferencia cuantifica la atrofia.' },

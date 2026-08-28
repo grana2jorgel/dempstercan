@@ -128,13 +128,34 @@ const rad = (g) => g * Math.PI / 180;
  */
 export const CONFORMACIONES = {
   mesomorfo: {
-    nombre: 'Mesomorfo (Labrador, Pastor Alemán, mestizo de talla media)',
+    nombre: 'Mesomorfo, talla media o grande (Labrador, Pastor Alemán, mestizo)',
     alzada: 1.25,
     cuello: 0.689, anguloCuello: 25.8, cabeza: 0.4205, anguloCabeza: 25.3,
     fem: 0.30, tib: 0.30, meta: 0.20, aFem: 30, aTib: 30, aMeta: 16,
     hum: 0.30, rad: 0.33, mc: 0.15, aHum: 20, aRad: 10, aMc: 5,
     dorso: { t13: [0.550, 0.030], l7: [0.880, 0.020], sacro: [1.000, 0.020], isquion: [1.240, 0.140] },
     cola: [1.600, 0.500]
+  },
+  toy: {
+    nombre: 'Toy o miniatura, menos de 5 kg (Chihuahua, Pomerania, Yorkshire, Maltés, Caniche toy)',
+    // Casi cuadrados, de hueso fino y cabeza grande respecto al cuerpo. NO son
+    // condrodistróficos: sus huesos largos tienen proporciones normales, solo
+    // que a menor escala. Clasificarlos como Teckel deformaría el reparto.
+    alzada: 1.08,
+    cuello: 0.520, anguloCuello: 34, cabeza: 0.380, anguloCabeza: 28,
+    fem: 0.30, tib: 0.29, meta: 0.20, aFem: 28, aTib: 28, aMeta: 14,
+    hum: 0.30, rad: 0.32, mc: 0.15, aHum: 22, aRad: 12, aMc: 6,
+    dorso: { t13: [0.550, 0.020], l7: [0.880, 0.020], sacro: [1.000, 0.030], isquion: [1.220, 0.150] },
+    cola: [1.480, 0.300]
+  },
+  pequeno: {
+    nombre: 'Pequeño de proporciones normales, 5–15 kg (Jack Russell, Schnauzer miniatura, Beagle, Fox terrier)',
+    alzada: 1.18,
+    cuello: 0.600, anguloCuello: 28, cabeza: 0.400, anguloCabeza: 24,
+    fem: 0.30, tib: 0.30, meta: 0.20, aFem: 29, aTib: 29, aMeta: 15,
+    hum: 0.30, rad: 0.33, mc: 0.15, aHum: 21, aRad: 11, aMc: 5,
+    dorso: { t13: [0.550, 0.025], l7: [0.880, 0.020], sacro: [1.000, 0.025], isquion: [1.230, 0.145] },
+    cola: [1.540, 0.440]
   },
   condrodistrofico: {
     nombre: 'Condrodistrófico (Teckel, Basset, Corgi, Bulldog Francés)',
