@@ -1,8 +1,19 @@
 /**
  * sw.js — Service worker: la app queda utilizable sin conexión.
- * Estrategia: precarga del núcleo + "primero la caché" para todo lo propio.
+ *
+ * IMPORTANTE AL PUBLICAR UNA VERSIÓN NUEVA: hay que subir el número de VERSION.
+ * Es lo único que hace que los teléfonos y ordenadores que ya tienen la app
+ * instalada se enteren de que hay algo nuevo. Si no se sube, el navegador
+ * sigue sirviendo desde su caché los archivos viejos y el usuario ve la app
+ * de siempre por mucho que el repositorio esté actualizado.
+ *
+ * Estrategia: "primero la caché" para que arranque instantánea y funcione en
+ * modo avión, pero con precarga forzada al instalar (`cache: 'reload'`, que
+ * salta la caché HTTP del navegador) y recarga automática de las pestañas
+ * abiertas en cuanto la versión nueva toma el control.
  */
-const CACHE = 'dempstercan-v3';
+const VERSION = '1.2.0';
+const CACHE = 'dempstercan-' + VERSION;
 
 const NUCLEO = [
   './', './index.html', './manifest.webmanifest',
@@ -16,8 +27,13 @@ const NUCLEO = [
 self.addEventListener('install', (e) => {
   e.waitUntil((async () => {
     const c = await caches.open(CACHE);
-    // addAll falla entero si un recurso falta; añadimos uno a uno para tolerarlo.
-    await Promise.all(NUCLEO.map(u => c.add(u).catch(() => {})));
+    // `cache: 'reload'` obliga a pedir cada archivo al servidor en vez de
+    // aceptar la copia que el navegador tuviera guardada. Sin esto, una
+    // versión nueva podía instalarse con archivos viejos dentro.
+    // add() falla entero si un recurso falta; se añaden uno a uno para tolerarlo.
+    await Promise.all(NUCLEO.map(u =>
+      c.add(new Request(u, { cache: 'reload' })).catch(() => c.add(u).catch(() => {}))
+    ));
     self.skipWaiting();
   })());
 });
@@ -28,6 +44,10 @@ self.addEventListener('activate', (e) => {
     await Promise.all(claves.filter(k => k !== CACHE).map(k => caches.delete(k)));
     await self.clients.claim();
   })());
+});
+
+self.addEventListener('message', (e) => {
+  if (e.data === 'version') e.source?.postMessage({ version: VERSION });
 });
 
 self.addEventListener('fetch', (e) => {

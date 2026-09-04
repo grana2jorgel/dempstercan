@@ -19,6 +19,14 @@ const $$ = (s) => Array.from(document.querySelectorAll(s));
 
 const LIENZO_VIRTUAL = { w: 1400, h: 1000 };
 
+/**
+ * Versión de la app. Debe coincidir con la constante VERSION de `sw.js`, que es
+ * la que hace que los dispositivos ya instalados se enteren de que hay algo
+ * nuevo. Al publicar cambios hay que subir LAS DOS.
+ */
+const VERSION_APP = '1.2.0';
+const FECHA_VERSION = '4 de septiembre de 2026';
+
 /* =================================================================== */
 /* Estado                                                              */
 /* =================================================================== */
@@ -1033,7 +1041,10 @@ function inicio() {
     parámetros segmentarios caninos publicados. <b>No usa ningún coeficiente humano de Dempster (1955)</b>: existe tabla
     canina completa (Jones et al. 2018) para todos los segmentos salvo la escápula, que la app declara como no disponible
     en vez de rellenarla. Funciona sin conexión y guarda todo en este dispositivo.
-    <br><br>Herramienta de apoyo: no sustituye al examen clínico ni a la palpación.`;
+    <br><br>Herramienta de apoyo: no sustituye al examen clínico ni a la palpación.
+    <br><br><b>Versión ${VERSION_APP}</b> · ${FECHA_VERSION}. Si acaba de actualizar el repositorio y aquí sigue
+    apareciendo una versión anterior, la app está sirviéndose de la copia guardada en este dispositivo: ciérrela del todo
+    y vuelva a abrirla, o recargue la página.`;
 
   escribirFormulario();
   pintarLista();
@@ -1045,7 +1056,27 @@ function inicio() {
   pintarCasos();
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(() => {});
+    // Cuando una versión nueva toma el control, la pestaña sigue ejecutando los
+    // módulos viejos que ya cargó. Sin esta recarga, el usuario tiene que
+    // cerrar y abrir la app dos veces para ver los cambios, que es exactamente
+    // lo que hacía pensar que la actualización no había llegado.
+    // `habiaControlador` evita recargar la primerísima visita, en la que el
+    // service worker toma el control por primera vez y no hay nada viejo.
+    const habiaControlador = !!navigator.serviceWorker.controller;
+    let recargando = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!habiaControlador || recargando) return;
+      recargando = true;
+      location.reload();
+    });
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      // Comprobar si hay versión nueva cada vez que se abre la app y cada vez
+      // que vuelve a primer plano.
+      reg.update().catch(() => {});
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) reg.update().catch(() => {});
+      });
+    }).catch(() => {});
   }
 }
 

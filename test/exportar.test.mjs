@@ -124,3 +124,32 @@ test('las cinco conformaciones producen un documento válido', async () => {
     assert.ok(b.length > 2000, conf + ': documento vacío');
   }
 });
+
+/* =================================================================== */
+/* Versión y caché                                                     */
+/* =================================================================== */
+
+test('la versión de sw.js y la de app.js coinciden', async () => {
+  // Si no coinciden, los dispositivos ya instalados pueden quedarse con una
+  // mezcla de archivos viejos y nuevos, o no enterarse de la actualización.
+  // Es exactamente el fallo que hacía que los cambios «no llegaran».
+  const { readFile } = await import('node:fs/promises');
+  const sw  = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
+  const app = await readFile(new URL('../js/app.js', import.meta.url), 'utf8');
+  const vSw  = sw.match(/const VERSION\s*=\s*'([^']+)'/);
+  const vApp = app.match(/const VERSION_APP\s*=\s*'([^']+)'/);
+  assert.ok(vSw, 'sw.js debe declarar VERSION');
+  assert.ok(vApp, 'app.js debe declarar VERSION_APP');
+  assert.equal(vSw[1], vApp[1], 'suba la versión en sw.js Y en app.js');
+});
+
+test('el service worker precarga todos los módulos de la app', async () => {
+  // Un módulo fuera de NUCLEO no se guarda al instalar: la app arrancaría
+  // pero fallaría al abrirla sin conexión.
+  const { readFile, readdir } = await import('node:fs/promises');
+  const sw = await readFile(new URL('../sw.js', import.meta.url), 'utf8');
+  const modulos = (await readdir(new URL('../js/', import.meta.url))).filter(f => f.endsWith('.js'));
+  for (const m of modulos) {
+    assert.ok(sw.includes(`./js/${m}`), `falta ./js/${m} en NUCLEO de sw.js`);
+  }
+});

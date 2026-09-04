@@ -58,7 +58,7 @@ instalada y sigue funcionando en modo avión: el service worker guarda todo.
 ```bash
 git clone https://github.com/USUARIO/dempstercan.git
 cd dempstercan
-npm test              # 67 pruebas: motor de cálculo y exportación
+npm test              # 69 pruebas: motor de cálculo y exportación
 python3 -m http.server 8080
 # abra http://localhost:8080
 ```
@@ -284,7 +284,7 @@ ningún peso** en este repositorio por licencias.
 
 ## Validación del motor de cálculo
 
-`npm test` ejecuta 67 pruebas. Además de las de consistencia interna
+`npm test` ejecuta 69 pruebas. Además de las de consistencia interna
 (equilibrio de momentos, invarianza a escala, rotación y espejo, cierre de la
 tabla de masas), hay tres de **validación externa** contra mediciones publicadas
 que el modelo no conoce:
@@ -318,7 +318,7 @@ js/store.js           IndexedDB
 js/report.js          informe imprimible
 js/exportar.js        .docx sin librerías (escritor de ZIP + OOXML) y ficha en imagen
 sw.js                 service worker: funcionamiento sin conexión
-test/                 67 pruebas, node:test, sin dependencias
+test/                 69 pruebas, node:test, sin dependencias
 tools/preparar_modelo.py   descarga, exporta y cuantiza el modelo ONNX
 tools/parche-android.mjs   declara el permiso de cámara en el APK
 ```

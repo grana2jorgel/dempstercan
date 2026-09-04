@@ -92,7 +92,7 @@ gh repo create dempstercan --public --source=. --push
    **Read and write permissions** → *Save*.
 
 No hace falta tocar nada más: el flujo `.github/workflows/pages.yml` ya está en
-el repositorio. Se dispara solo con cada push a `main`, ejecuta antes las 67
+el repositorio. Se dispara solo con cada push a `main`, ejecuta antes las 69
 pruebas del motor de cálculo y solo publica si pasan.
 
 ### A.2 Esperar a que publique
@@ -141,15 +141,35 @@ dispositivo y nunca sale de él. Para llevárselo, en el teléfono antiguo vaya 
 
 ### A.5 Actualizar la app más adelante
 
+**Lo primero, y lo que más se olvida: subir el número de versión.** Está en dos
+sitios y tienen que coincidir:
+
+- `sw.js` → `const VERSION = '1.2.0'`
+- `js/app.js` → `const VERSION_APP = '1.2.0'`
+
+Ese número es lo único que hace que los teléfonos y ordenadores que ya tienen la
+app instalada se enteren de que hay algo nuevo. Si no se sube, el navegador
+sigue sirviendo los archivos guardados en el dispositivo y **usted ve la app de
+siempre por mucho que el repositorio esté correcto**. Hay una prueba automática
+que falla si los dos números no coinciden, así que Actions se lo avisará.
+
+Después, subir los archivos (por el navegador o con Git):
+
 ```bash
 git add -A
 git commit -m "lo que haya cambiado"
 git push
 ```
 
-GitHub republica sola. En el teléfono, la nueva versión entra la **segunda** vez
-que abra la app: la primera se descarga en segundo plano. Si quiere forzarlo,
-cierre la app del todo y vuelva a abrirla dos veces.
+GitHub republica sola. En cuanto el dispositivo detecta la versión nueva, la
+descarga y **recarga la app sola**: no hay que abrirla dos veces ni borrar
+nada. Puede comprobar qué versión está corriendo en **Capas → Acerca de**.
+
+**Orden correcto al subir por el navegador:** suba **todo el contenido de la
+carpeta de una sola vez** (arrastrando `index.html`, `sw.js`, `js/`, `css/`,
+`docs/`… juntos) y haga **un solo commit**. Subir primero unos archivos y
+después otros deja el sitio publicado unos minutos con una mezcla de versiones,
+y si alguien lo abre en ese hueco puede guardarse esa mezcla en la caché.
 
 ---
 
@@ -217,7 +237,7 @@ puede repetirlo cuantas veces quiera.
 
 ```bash
 cd dempstercan
-npm test                      # 67 pruebas del motor de cálculo
+npm test                      # 69 pruebas del motor de cálculo
 python3 -m http.server 8080
 ```
 
