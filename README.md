@@ -31,6 +31,8 @@ Android**. Nada sale del dispositivo.
 | **Incertidumbre** | Monte Carlo sobre las desviaciones estándar publicadas → IC 95 % del reparto de carga. |
 | **Reparto medido** | Si tiene básculas o plataforma de presión, entra la medición real y se calculan los índices de simetría de Alves et al. 2024. |
 | **Exportar** | Cuatro salidas desde un mismo botón: **ficha de resultados en imagen** (diagrama + todas las tablas, para mensajería o historia clínica), **documento de Word (.docx)** editable con el diagrama incrustado, PNG solo del diagrama, e informe imprimible → PDF. En el teléfono abre la hoja de compartir de Android. |
+| **Examen zooquinético** | Ficha de inspección clínica en estática (postura, actitud, aplomos, desarrollo muscular, tono y trofismo, estabilidad), grado de claudicación y clasificación de la disfunción, según la pauta de Sterin 2008. La app la registra y la lleva al informe; no la puntúa. |
+| **Simetría muscular** | Perímetro de muslo y antebrazo en los dos lados, con la diferencia en cm y en porcentaje. Sin umbral inventado: no existe cifra publicada en el perro. |
 | **Historial** | Casos en IndexedDB, exportables a JSON. Solo en el dispositivo. |
 
 ---
@@ -56,7 +58,7 @@ instalada y sigue funcionando en modo avión: el service worker guarda todo.
 ```bash
 git clone https://github.com/USUARIO/dempstercan.git
 cd dempstercan
-npm test              # 57 pruebas: motor de cálculo y exportación
+npm test              # 67 pruebas: motor de cálculo y exportación
 python3 -m http.server 8080
 # abra http://localhost:8080
 ```
@@ -282,7 +284,7 @@ ningún peso** en este repositorio por licencias.
 
 ## Validación del motor de cálculo
 
-`npm test` ejecuta 57 pruebas. Además de las de consistencia interna
+`npm test` ejecuta 67 pruebas. Además de las de consistencia interna
 (equilibrio de momentos, invarianza a escala, rotación y espejo, cierre de la
 tabla de masas), hay tres de **validación externa** contra mediciones publicadas
 que el modelo no conoce:
@@ -316,7 +318,7 @@ js/store.js           IndexedDB
 js/report.js          informe imprimible
 js/exportar.js        .docx sin librerías (escritor de ZIP + OOXML) y ficha en imagen
 sw.js                 service worker: funcionamiento sin conexión
-test/                 57 pruebas, node:test, sin dependencias
+test/                 67 pruebas, node:test, sin dependencias
 tools/preparar_modelo.py   descarga, exporta y cuantiza el modelo ONNX
 tools/parche-android.mjs   declara el permiso de cámara en el APK
 ```
@@ -342,6 +344,7 @@ escapular canina, se cambia ahí y en ningún otro sitio.
 10. Formenton MR, de Lima LG, Vassalo FG, et al. *Goniometric Assessment in French Bulldogs*. Front Vet Sci. 2019;6:424. [doi:10.3389/fvets.2019.00424](https://doi.org/10.3389/fvets.2019.00424)
 11. Reusing M, Brocardo M, Weber S, Villanova Jr J. *Goniometric Evaluation and Passive Range of Joint Motion in Chondrodystrophic and Non-Chondrodystrophic Dogs of Different Sizes*. VCOT Open. 2020;3:e66–e71. [doi:10.1055/s-0040-1713825](https://doi.org/10.1055/s-0040-1713825)
 12. Millis D, Levine D. *Canine Rehabilitation and Physical Therapy*, 2.ª ed. Saunders Elsevier; 2014.
+13. Sterin GM. *Diagnóstico zookinésico en pequeños animales*. Información Veterinaria. Septiembre 2008:13–16. — Fuente de **estructura y vocabulario**, no de datos: define las 5 cadenas cinéticas del diagrama de Dempster canino, las UBM y los SFC, la definición operativa de equilibrio y la pauta del examen zooquinético. No aporta ninguna constante numérica al motor de cálculo, y una prueba automática lo verifica.
 
 Referencias que convendría conseguir y que ampliarían el modelo, hoy tras muro
 de pago: Nielsen et al. (Am J Vet Res 2003;64(5):609–617), única vía conocida a

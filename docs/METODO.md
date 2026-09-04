@@ -267,6 +267,47 @@ palanca del peso corporal respecto a esa articulación en la postura
 fotografiada, y el equivalente canino del análisis de plomada de la valoración
 postural estática humana.
 
+Se dibujan **dos** líneas de puntos por el centro de masa: la vertical (línea de
+gravedad propiamente dicha) y una horizontal paralela al suelo. Su intersección
+marca el centro de gravedad, que es como se representa en el diagrama de
+Dempster canino clásico (Sterin 2008). Cada una es una capa independiente y se
+puede apagar.
+
+## 7 bis. Simetría muscular por perímetro
+
+Sterin (2008) recomienda medir el perímetro del músculo para seguir la
+evolución del paciente. La app pide el perímetro de **muslo y antebrazo en los
+dos lados** y calcula:
+
+```
+diferencia_cm  = P_fotografiado − P_contralateral
+diferencia_%   = |diferencia_cm| / max(P_fotografiado, P_contralateral) × 100
+```
+
+Solo el perímetro del **lado fotografiado** entra en el modelo morfométrico de
+masas, porque el modelo trabaja sobre el hemicuerpo que se ve en la foto. El
+contralateral no altera ningún cálculo: sirve para la comparación clínica.
+
+**No se aplica ningún umbral.** No existe cifra publicada de diferencia
+perimetral que separe lo normal de lo patológico en el perro, así que la app da
+la diferencia y la deja sin calificar. Si solo se introduce un lado, la app
+avisa: la medida sigue sirviendo para el modelo de masas, pero la atrofia solo
+se aprecia comparando.
+
+## 7 ter. Examen zooquinético
+
+Junto a la medición, la app registra la inspección clínica en estática según la
+pauta de Sterin (2008): postura, actitud, aplomos, desarrollo muscular, tono y
+trofismo, estabilidad; grado de claudicación; y la clasificación de la
+disfunción (locus dolenti, incapacidad o discapacidad, deficiencia
+estructural). También la actividad, el hábitat y los antecedentes quirúrgicos.
+
+La app **no puntúa ni interpreta** nada de esto: lo recoge y lo lleva al
+informe y al Word, para que el seguimiento del paciente reúna en un mismo
+documento la observación clínica y los números. Los ítems se ofrecen con una
+valoración mínima (normal / alterado / no valorado) más nota libre, porque la
+fuente enumera qué observar pero no publica escala de graduación para ninguno.
+
 ## 8. Incertidumbre
 
 Monte Carlo con 800 iteraciones y generador congruencial de semilla fija (los

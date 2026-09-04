@@ -92,7 +92,7 @@ gh repo create dempstercan --public --source=. --push
    **Read and write permissions** → *Save*.
 
 No hace falta tocar nada más: el flujo `.github/workflows/pages.yml` ya está en
-el repositorio. Se dispara solo con cada push a `main`, ejecuta antes las 37
+el repositorio. Se dispara solo con cada push a `main`, ejecuta antes las 67
 pruebas del motor de cálculo y solo publica si pasan.
 
 ### A.2 Esperar a que publique
@@ -127,6 +127,17 @@ Acéptelo. Si lo rechazó por error: Chrome → tres puntos → *Configuración*
 > Si abre la app desde la IP local de su ordenador (algo como
 > `http://192.168.1.40:8080`), todo funcionará **menos la cámara**. GitHub Pages
 > sirve por HTTPS, así que no tiene ese problema.
+
+### A.4 bis Instalar en un segundo teléfono
+
+No hay que volver a subir nada ni descargar archivos: la app ya está publicada.
+En el teléfono nuevo, abra la misma dirección en Chrome y repita los pasos A.3 y
+A.4. Dos minutos.
+
+Lo único que **no** viaja es el historial de casos: se guarda en cada
+dispositivo y nunca sale de él. Para llevárselo, en el teléfono antiguo vaya a
+**Capas → Exportar todo (JSON)**, pase el archivo al nuevo, y allí
+**Capas → Importar**.
 
 ### A.5 Actualizar la app más adelante
 
@@ -206,7 +217,7 @@ puede repetirlo cuantas veces quiera.
 
 ```bash
 cd dempstercan
-npm test                      # 37 pruebas del motor de cálculo
+npm test                      # 67 pruebas del motor de cálculo
 python3 -m http.server 8080
 ```
 

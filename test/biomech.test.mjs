@@ -5,10 +5,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 import { PLANTILLA, ARTICULACIONES, REPAROS_OBLIGATORIOS } from '../js/landmarks.js';
-import { SEGMENTOS } from '../js/params.js';
+import { SEGMENTOS, PERIMETROS, FUENTES, CADENAS_CINETICAS, EXAMEN_ESTATICO,
+         VALORACION_ITEM, CLAUDICACION, DISFUNCION } from '../js/params.js';
 import {
   anguloArticular, marcoReferencia, centroDeMasa, estatica, analizar,
-  repartoMedido, escala, orientacionSagital, G
+  repartoMedido, escala, orientacionSagital, simetriaMuscular, G
 } from '../js/biomech.js';
 
 /** Convierte la plantilla normalizada en puntos "de imagen" (y hacia abajo). */
@@ -434,4 +435,212 @@ test('el trocánter enlaza la pelvis con el miembro pelviano', () => {
   const comun = pelvis.puntos.filter(p => miembro.puntos.includes(p));
   assert.ok(comun.includes('trocanter'),
     'el miembro pelviano quedaría suelto respecto al esqueleto axial');
+});
+
+/* ------------------------------------------------------------------ */
+/* Referencia clínica del codo y comprobaciones de coherencia          */
+/* ------------------------------------------------------------------ */
+
+test('el centro de masa queda proximal y caudal al codo, como dicta la clínica', () => {
+  for (const conf of ['mesomorfo', 'condrodistrofico', 'lebrel', 'molosoide', 'gigante']) {
+    const r = analizar({ puntos: perroDe(conf), masaKg: 20 });
+    const c = r.referenciaCodo;
+    assert.ok(c, conf + ': no se calculó la referencia del codo');
+    assert.ok(c.esCaudal, `${conf}: el CdM salió craneal al codo`);
+    assert.ok(c.esProximal, `${conf}: el CdM salió por debajo del codo`);
+    assert.ok(c.coherente, conf);
+  }
+});
+
+test('la distancia al codo se expresa en cm cuando hay calibración', () => {
+  const p = perroDe('mesomorfo');
+  const r = analizar({ puntos: p, masaKg: 30, calibracion: { p1: [0, 0], p2: [0, 400], cm: 60 } });
+  const c = r.referenciaCodo;
+  // 400 px = 60 cm, y la plantilla mide 400 px por longitud de tronco.
+  assert.ok(Math.abs(c.caudalCm - c.caudalEnTroncos * 60) < 0.01);
+  assert.ok(c.caudalCm > 5 && c.caudalCm < 40, `${c.caudalCm} cm caudal al codo`);
+});
+
+test('sin calibración la referencia del codo sigue dando el sentido', () => {
+  const r = analizar({ puntos: perroDe('mesomorfo'), masaKg: 30 });
+  assert.equal(r.referenciaCodo.caudalCm, null);
+  assert.equal(r.referenciaCodo.esCaudal, true);
+  assert.ok(r.referenciaCodo.caudalEnTroncos > 0);
+});
+
+test('un reparto imposible se avisa en vez de darse por bueno', () => {
+  const p = perroDe('mesomorfo');
+  // Cabeza llevada muy por delante: fuerza un reparto torácico irreal.
+  const tronco = Math.hypot(p.sacro[0] - p.t1[0], p.sacro[1] - p.t1[1]);
+  p.occipucio = [p.occipucio[0] - tronco * 1.6, p.occipucio[1]];
+  p.hocico = [p.hocico[0] - tronco * 1.6, p.hocico[1]];
+  const r = analizar({ puntos: p, masaKg: 30 });
+  assert.ok(r.estatica.cargaToracicaPct > 78, 'la prueba no ha forzado un valor extremo');
+  assert.ok(r.avisos.some(a => /fuera de lo que se ha descrito/i.test(a)),
+    'no se avisó de un reparto imposible');
+});
+
+test('si el CdM sale craneal al codo, la app lo señala', () => {
+  const p = perroDe('mesomorfo');
+  // Codo desplazado muy caudal: marcado incoherente.
+  const tronco = Math.hypot(p.sacro[0] - p.t1[0], p.sacro[1] - p.t1[1]);
+  p.codo = [p.codo[0] + tronco * 1.2, p.codo[1]];
+  const r = analizar({ puntos: p, masaKg: 30 });
+  assert.equal(r.referenciaCodo.esCaudal, false);
+  assert.ok(r.avisos.some(a => /craneal al codo/i.test(a)));
+});
+
+test('el reparto de las cinco conformaciones cae en el rango descrito', () => {
+  for (const conf of ['mesomorfo', 'condrodistrofico', 'lebrel', 'molosoide', 'gigante']) {
+    const r = analizar({ puntos: perroDe(conf), masaKg: 20 });
+    assert.ok(!r.avisos.some(a => /fuera de lo que se ha descrito/i.test(a)),
+      `${conf}: ${r.estatica.cargaToracicaPct.toFixed(1)} % dispara el aviso de reparto imposible`);
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/* Tallas pequeñas: toy y pequeño de proporciones normales             */
+/* ------------------------------------------------------------------ */
+
+test('existen conformaciones para razas toy y pequeñas no condrodistróficas', () => {
+  assert.ok(CONFORMACIONES.toy, 'falta la conformación toy');
+  assert.ok(CONFORMACIONES.pequeno, 'falta la conformación pequeña');
+  // Un Chihuahua NO es condrodistrófico: sus huesos largos tienen proporciones
+  // normales a menor escala. Confundirlos deformaría el reparto de masa.
+  assert.ok(CONFORMACIONES.toy.alzada > CONFORMACIONES.condrodistrofico.alzada + 0.25,
+    'el toy no puede parecerse a un condrodistrófico en alzada relativa');
+});
+
+test('las siete conformaciones se ordenan de forma coherente por alzada relativa', () => {
+  const a = (k) => CONFORMACIONES[k].alzada;
+  assert.ok(a('condrodistrofico') < a('molosoide'));
+  assert.ok(a('molosoide') < a('toy'));
+  assert.ok(a('toy') < a('pequeno'));
+  assert.ok(a('pequeno') < a('mesomorfo'));
+  assert.ok(a('mesomorfo') < a('gigante'));
+  assert.ok(a('gigante') < a('lebrel'));
+});
+
+test('toy y pequeño dan resultados fisiológicamente posibles', () => {
+  for (const [conf, kg] of [['toy', 3], ['pequeno', 9]]) {
+    const r = analizar({ puntos: perroDe(conf), masaKg: kg });
+    const t = r.estatica.cargaToracicaPct;
+    assert.ok(t > 50 && t < 70, `${conf}: carga torácica ${t.toFixed(1)} %`);
+    assert.ok(r.estatica.dentroDeBase, conf);
+    assert.ok(r.referenciaCodo.coherente, `${conf}: el CdM no quedó proximal y caudal al codo`);
+    assert.ok(!r.avisos.some(a => /fuera de lo que se ha descrito/i.test(a)), conf);
+  }
+});
+
+test('en un paciente pequeño se apunta a la referencia de Linder, no a la de razas grandes', () => {
+  const r = analizar({ puntos: perroDe('pequeno'), masaKg: 9 });
+  assert.ok(r.avisos.some(a => /Linder 2021/.test(a)));
+  const grande = analizar({ puntos: perroDe('mesomorfo'), masaKg: 30 });
+  assert.ok(!grande.avisos.some(a => /Linder 2021/.test(a)));
+});
+
+test('en razas toy se avisa de que la cabeza queda infravalorada', () => {
+  const r = analizar({ puntos: perroDe('toy'), masaKg: 3, conformacion: 'toy' });
+  assert.ok(r.avisos.some(a => /cabeza es corta pero voluminosa/i.test(a)));
+});
+
+test('no se ofrece perímetro craneal', () => {
+  // Se descartó a propósito: con sección uniforme daba 18 % de masa craneal
+  // frente al 9,2 % medido por Amit 2009.
+  assert.ok(!PERIMETROS.some(p => p.id === 'cabeza'));
+});
+
+/* =================================================================== */
+/* Sterin 2008 — examen zooquinético, cadenas cinéticas y perímetros    */
+/* =================================================================== */
+
+test('la simetría muscular necesita los dos lados y expresa la diferencia sobre el lado mayor', () => {
+  // Solo un lado: no hay nada que comparar.
+  assert.equal(simetriaMuscular({ muslo: 22 }), null);
+
+  const s = simetriaMuscular({ muslo: 22, muslo_contra: 20 }, 'Izquierdo');
+  assert.equal(s.filas.length, 1);
+  const f = s.filas[0];
+  assert.equal(f.ladoFotografiado, 'izquierdo');
+  assert.equal(f.ladoContralateral, 'derecho');
+  assert.equal(f.diferenciaCm, 2);
+  // 2 cm sobre el mayor (22) = 9,09 %
+  assert.ok(Math.abs(f.diferenciaPct - 200 / 22) < 1e-9);
+  assert.equal(f.menor, 'derecho');
+});
+
+test('la simetría muscular identifica bien el lado menor cuando el atrofiado es el fotografiado', () => {
+  const f = simetriaMuscular({ antebrazo: 16, antebrazo_contra: 18 }, 'Derecho').filas[0];
+  assert.equal(f.menor, 'derecho');
+  assert.equal(f.ladoContralateral, 'izquierdo');
+});
+
+test('un perímetro bilateral medido en un solo lado genera aviso', () => {
+  const r = analizar({ puntos: perroPlantilla(), masaKg: 30, perimetros: { muslo: 22 } });
+  assert.ok(r.avisos.some(a => /se ha medido en un solo lado/.test(a)));
+  const r2 = analizar({ puntos: perroPlantilla(), masaKg: 30, perimetros: { muslo: 22, muslo_contra: 21 } });
+  assert.ok(!r2.avisos.some(a => /se ha medido en un solo lado/.test(a)));
+});
+
+test('el perímetro contralateral no altera el modelo de masas', () => {
+  // El modelo morfométrico trabaja sobre el hemicuerpo fotografiado: el dato
+  // del lado contrario sirve para la comparación clínica, no para las masas.
+  const base = { puntos: perroPlantilla(), masaKg: 30, conformacion: 'mesomorfo',
+                 calibracion: { p1: [0, 0], p2: [100, 0], cm: 10 } };
+  const a = analizar({ ...base, perimetros: { muslo: 22 } });
+  const b = analizar({ ...base, perimetros: { muslo: 22, muslo_contra: 14 } });
+  assert.equal(a.estatica.cargaToracicaPct, b.estatica.cargaToracicaPct);
+});
+
+test('los perímetros musculares se piden en los dos lados', () => {
+  const bilaterales = PERIMETROS.filter(p => p.contralateral).map(p => p.id);
+  assert.deepEqual(bilaterales.sort(), ['antebrazo', 'muslo']);
+});
+
+test('el diagrama declara las cinco cadenas cinéticas de Sterin 2008', () => {
+  assert.equal(CADENAS_CINETICAS.n, 5);
+  assert.equal(CADENAS_CINETICAS.lista.length, 5);
+  assert.equal(CADENAS_CINETICAS.lista.filter(c => c.tipo === 'ejecución').length, 4);
+  assert.equal(CADENAS_CINETICAS.lista.filter(c => c.tipo === 'asociación').length, 1);
+  assert.equal(CADENAS_CINETICAS.fuente, 'S08');
+});
+
+test('Sterin 2008 no aporta ninguna constante numérica al motor', () => {
+  // Es una fuente de estructura y vocabulario. Si algún día alguien cuelga un
+  // número de ella, esta prueba lo detiene.
+  assert.ok(FUENTES.S08);
+  const bloques = [CADENAS_CINETICAS, CLAUDICACION, DISFUNCION,
+                   { items: EXAMEN_ESTATICO }, { v: VALORACION_ITEM }];
+  for (const b of bloques) {
+    const texto = JSON.stringify(b);
+    // `n: 5` (número de cadenas) es el único número admitido, y es un recuento.
+    const numeros = texto.match(/:\s*-?\d+(\.\d+)?/g) || [];
+    assert.ok(numeros.length <= 1, 'aparecieron constantes numéricas: ' + numeros.join(', '));
+  }
+});
+
+test('cada ítem del examen estático tiene identificador y nombre', () => {
+  for (const it of EXAMEN_ESTATICO) {
+    assert.ok(it.id && it.nombre, JSON.stringify(it));
+  }
+  assert.ok(VALORACION_ITEM.includes('Normal') && VALORACION_ITEM.includes('Alterado'));
+  assert.ok(VALORACION_ITEM.includes(''), 'debe existir el valor vacío "sin registrar"');
+});
+
+test('la escala de claudicación no inventa descriptores de grado', () => {
+  assert.equal(CLAUDICACION.fuente, 'S08');
+  assert.ok(/no publica los descriptores/.test(CLAUDICACION.nota));
+  for (const g of CLAUDICACION.grados) {
+    if (g === '' || g === '0 — ausente') continue;
+    assert.ok(/^\d$/.test(g), `el grado «${g}» lleva descriptor inventado`);
+  }
+});
+
+test('analizar() devuelve la simetría muscular dentro del resultado', () => {
+  const r = analizar({ puntos: perroPlantilla(), masaKg: 30, lado: 'Izquierdo',
+                       perimetros: { muslo: 22, muslo_contra: 20 } });
+  assert.ok(r.simetriaMuscular);
+  assert.equal(r.simetriaMuscular.filas[0].ladoFotografiado, 'izquierdo');
+  const sin = analizar({ puntos: perroPlantilla(), masaKg: 30 });
+  assert.equal(sin.simetriaMuscular, null);
 });

@@ -109,7 +109,33 @@
           <label>Fecha<input id="fFecha" type="date"></label>
           <label class="ancho2">Explorador<input id="fExplorador" type="text" autocomplete="off"></label>
           <label class="ancho2">Motivo / diagnóstico<input id="fMotivo" type="text" autocomplete="off"></label>
+          <label>Actividad
+            <select id="fActividad"><option value=""></option><option>Doméstica</option><option>Deporte</option><option>Exposición</option><option>Trabajo</option><option>Guardia</option></select>
+          </label>
+          <label>Hábitat
+            <select id="fHabitat"><option value=""></option><option>Casa</option><option>Departamento</option><option>Patio / exterior</option><option>Perrera</option></select>
+          </label>
+          <label class="ancho2">Cirugías y antecedentes<input id="fAntecedentes" type="text" autocomplete="off" placeholder="p. ej. osteotomía pélvica hace 8 meses"></label>
         </div>
+        <p class="ayuda">Reseña y anamnesis según la pauta de examen zooquinético de Sterin (2008). La actividad y los antecedentes quirúrgicos cambian la lectura del reparto de carga: una osteotomía pélvica limita la abducción de la cadera y una atrofia crónica altera los parámetros inerciales.</p>
+      </div>
+
+      <div class="bloque">
+        <h3>Examen zooquinético en estática <span class="opc">opcional</span></h3>
+        <p class="ayuda">Inspección clínica que acompaña a la medición. La app no la calcula ni la puntúa: la registra y la lleva al informe, junto a los números, para que el seguimiento del paciente quede completo.</p>
+        <div class="rejilla" id="rejillaExamen"></div>
+        <div class="rejilla" style="margin-top:8px">
+          <label>Grado de claudicación
+            <select id="fClaudicacion"></select>
+          </label>
+          <label>Incapacidad / discapacidad
+            <select id="fCapacidad"></select>
+          </label>
+          <label class="ancho2">Localización del locus dolenti<input id="fLocus" type="text" autocomplete="off"></label>
+          <label class="ancho2">Deficiencia estructural<input id="fEstructural" type="text" autocomplete="off"></label>
+          <label class="ancho2">Observaciones de la inspección<input id="fObservaciones" type="text" autocomplete="off"></label>
+        </div>
+        <p class="ayuda" id="notaClaudicacion"></p>
       </div>
 
       <div class="bloque">

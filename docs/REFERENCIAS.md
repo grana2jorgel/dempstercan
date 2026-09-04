@@ -105,6 +105,72 @@ Regresión publicada:
 > **Se midió en DECÚBITO**, no en estación. DempsterCan calcula el CdM por suma
 > de segmentos y usa estos valores solo como comprobación de coherencia.
 
+### La regla clínica del codo
+
+La formulación que se enseña —«el centro de gravedad del perro queda proximal y
+caudal al codo, hacia la apófisis xifoides»— es coherente con Johnson et al.: el
+48 % de la distancia cuello ventral–isquion cae aproximadamente a ese nivel.
+
+La app la usa como **comprobación cualitativa del marcado**, no como criterio de
+normalidad. En cada análisis informa de a cuántos centímetros caudal y proximal
+al codo ha quedado el centro de masa, y avisa si sale craneal o distal, que en
+la práctica significa casi siempre que hay un reparo mal colocado.
+
+Con la plantilla mesomorfa el resultado es 0,33 longitudes de tronco caudal y
+0,52 dorsal al codo, comprobado en las cinco conformaciones.
+
+### Conformaciones disponibles para el prealineamiento
+
+Siete tipos, ordenados por alzada relativa (altura a la cruz en longitudes de
+tronco T1–sacro). Solo cambian la plantilla de partida; el cálculo se hace
+siempre sobre los reparos que coloca el explorador.
+
+| Conformación | Alzada rel. | Ejemplos |
+|---|---|---|
+| Condrodistrófico | 0,72 | Teckel, Basset, Corgi, Bulldog Francés |
+| Molosoide / braquicéfalo | 1,00 | Bóxer, Bulldog, Mastín, Carlino |
+| **Toy o miniatura (< 5 kg)** | **1,08** | **Chihuahua, Pomerania, Yorkshire, Maltés, Caniche toy** |
+| **Pequeño de proporciones normales (5–15 kg)** | **1,18** | **Jack Russell, Schnauzer miniatura, Beagle, Fox terrier** |
+| Mesomorfo, talla media o grande | 1,25 | Labrador, Pastor Alemán, mestizo |
+| Gigante / longilíneo | 1,42 | Gran Danés, Mastín, Lobero irlandés |
+| Lebrel / cursorial | 1,45 | Galgo, Whippet, Saluki, Borzoi |
+
+**Un toy no es un condrodistrófico.** Un Chihuahua tiene los huesos largos con
+proporciones normales, solo que a menor escala; un Teckel los tiene acortados
+por displasia. Clasificar mal uno como el otro deforma el reparto de masa: la
+alzada relativa pasa de 1,08 a 0,72.
+
+### El límite conocido en razas toy y braquicéfalas
+
+El modelo reparte la masa en proporción al volumen tratando cada segmento como
+un sólido de **sección uniforme**. La cabeza es el segmento que peor encaja en
+esa hipótesis, porque se estrecha mucho hacia el hocico, y es justo el que más
+pesa relativamente en un Chihuahua o un Carlino.
+
+Se probó a corregirlo pidiendo el perímetro craneal con cinta, y **se descartó**:
+medir el cráneo por su parte más ancha y aplicar esa sección a toda la longitud
+del segmento daba un 18 % de masa craneal en un Chihuahua, cuando Amit et al.
+(2009) midieron 9,2 % en mestizos. El sesgo no venía del dato del usuario sino
+de la hipótesis geométrica, así que la app **avisa** en estas conformaciones de
+que la cabeza queda probablemente infravalorada, en vez de fingir que lo
+corrige.
+
+### Por qué el 60:40 no se impone
+
+El 60:40 es una **media poblacional**, no un objetivo. Si la app forzara ese
+reparto dejaría de medir: el reparto es precisamente el resultado que se busca,
+y lo que informa sobre el paciente es su desviación respecto a lo esperado.
+
+Lo que sí hace la app es contrastar el valor calculado con el rango publicado
+(59–69,4 %) y avisar cuando cae fuera de lo descrito en perros, sanos o cojos
+(por debajo del 50 % o por encima del 78 %). En ese caso la causa habitual no es
+el perro sino el marcado, y el aviso lo dice.
+
+Sensibilidad medida sobre la plantilla mesomorfa: desplazar la cabeza un cuarto
+de la longitud del tronco cambia el reparto en unos 2,6 puntos porcentuales. Es
+el segmento que más lo mueve, y la razón de que la posición de la cabeza en la
+fotografía importe tanto.
+
 ---
 
 ## 3. Reparto de carga estático
@@ -261,3 +327,86 @@ RTMPose-m 26,4 ms. Penalización navegador vs. nativo en CPU móvil: **×15,8**
 (*ACM TOSEM* 2024, doi:10.1145/3688843); SIMD + multihilo la reducen un 63 %.
 Para foto fija, RTMPose-t/s int8 en ONNX Runtime Web es viable (~150–600 ms);
 HRNet-w32 y cualquier ViT no lo son.
+
+---
+
+## 8. Estructura del examen zooquinético y del diagrama de Dempster canino
+
+**Fuente:** Sterin GM. *Diagnóstico zookinésico en pequeños animales*.
+Información Veterinaria, septiembre 2008:13–16.
+
+**Advertencia de uso, la más importante de esta sección:** este artículo es una
+revisión clínica y **no publica ni un solo dato numérico**. No aporta masas
+segmentarias, ni coeficientes de centro de masa, ni ángulos de referencia, ni
+porcentajes de reparto de carga. Ningún cálculo de la app se apoya en él. Lo
+que sí aporta —y por eso está incorporado— es la **estructura y el vocabulario**
+con los que el diagrama de Dempster se usa en la clínica de rehabilitación
+veterinaria en español, y la pauta del examen que acompaña a la medición.
+
+### 8.1 Composición del diagrama
+
+| Elemento | Definición según la fuente |
+|---|---|
+| Cadenas cinéticas | **Cinco**: dos miembros torácicos, dos miembros pelvianos y el raquis |
+| Cadenas de ejecución | Las de los miembros, formadas por **UBM** sucesivas |
+| Cadenas de asociación | El raquis, formado por **SFC** sucesivos |
+| UBM (unidad biomecánica) | Una articulación de los miembros, con sus componentes osteoarticular, neuromuscular y angiovegetativo |
+| SFC (segmento cinético funcional) | Dos vértebras contiguas y su articulación intervertebral |
+| Centro de gravedad | Intersección de las líneas de puntos vertical y horizontal |
+| Equilibrio | Capacidad de mantener el centro de gravedad por encima de la superficie de apoyo; en estación, dentro de la base de sustentación |
+
+Consecuencia práctica en la app: una fotografía sagital solo muestra **una de
+cada par** de cadenas de los miembros, así que la medición es de un hemicuerpo
+y los segmentos pares se asumen simétricos. Toda comparación real entre lados
+tiene que entrar por otra vía: básculas, perímetros bilaterales o una segunda
+fotografía del lado contrario. Está recogido en `LIMITACIONES`.
+
+### 8.2 Inspección en estática
+
+Ítems que la fuente enumera para la observación en estación: postura, actitud,
+aplomos, desarrollo muscular, medición de ángulos articulares, tono y trofismo
+muscular, estabilidad. En dinámica: movilidad, flexibilidad, coordinación,
+equilibrio y capacidad funcional (fuera del alcance de esta app, que trabaja
+sobre foto fija).
+
+**La fuente no publica escala de graduación para ninguno de esos ítems.** Por
+eso la app ofrece una valoración mínima (normal / alterado / no valorado) más
+una nota libre, en vez de inventar grados sin validar.
+
+### 8.3 Claudicación
+
+La fuente cita claudicaciones «de 1º a 4º grado» pero **no publica los
+descriptores de cada grado**, que además varían entre autores. La app registra
+el grado y pide al explorador que anote la escala empleada; no impone
+descriptores.
+
+### 8.4 Clasificación de la disfunción
+
+| Categoría | Definición según la fuente |
+|---|---|
+| Locus dolenti | Punto de dolor; su localización explica la disfunción locomotora y sus consecuencias biomecánicas |
+| Incapacidad | Falta absoluta o total de potencia para la actividad cotidiana, con pérdida completa de la función |
+| Discapacidad | Dificultad, imperfección o desorden parcial para mantener la potencia necesaria |
+| Deficiencia estructural | Estructura concreta (músculo, hueso, articulación, nervio) cuya disfunción da resultado a la deficiencia del conjunto |
+
+### 8.5 Perímetro muscular
+
+La fuente recomienda medir el perímetro del músculo para seguir la evolución
+del paciente. La app lo pide **en los dos lados** para muslo y antebrazo y
+calcula la diferencia en cm y en porcentaje del lado mayor.
+
+**No existe umbral publicado** —ni en esta fuente ni en las demás que usa la
+app— de diferencia perimetral que separe lo normal de lo patológico en el
+perro. Por eso la app da la cifra y no la califica: el criterio válido es el
+mismo que para los ángulos, comparar con el propio paciente en su medición
+anterior.
+
+### 8.6 Goniometría
+
+La fuente insiste en que la goniometría clínica debe ser **pasiva, bilateral y
+realizada generalmente entre dos personas**, y en que las diferencias entre
+mediciones dependen de raza, sexo, edad, tejido blando, estructura ósea y
+cirugías previas (cita expresamente la limitación de la abducción de cadera
+posterior a una osteotomía pélvica). Nada de eso es medible desde una foto en
+estación: la app mide el **ángulo en carga en la postura fotografiada**, que es
+una magnitud distinta y complementaria, no un sustituto.
