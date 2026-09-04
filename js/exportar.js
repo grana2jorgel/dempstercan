@@ -201,8 +201,28 @@ export function construirDocx(o) {
     ['Edad', f.edad || '—', 'Sexo', f.sexo || '—'],
     ['Masa corporal', R.masaKg ? n1(R.masaKg, ' kg') : '—', 'Fecha de la toma', caso.fecha || '—'],
     ['Lado fotografiado', f.lado || '—', 'Explorador', f.explorador || '—'],
-    ['Motivo / diagnóstico', f.motivo || '—', '', '']
+    ['Actividad', f.actividad || '—', 'Hábitat', f.habitat || '—'],
+    ['Motivo / diagnóstico', f.motivo || '—', 'Cirugías y antecedentes', f.antecedentes || '—']
   ], [22, 28, 22, 28]));
+
+  /* --- examen zooquinético (solo lo que se haya rellenado) -------- */
+  const filasExamen = (REF.EXAMEN_ESTATICO || [])
+    .filter(it => f.examen && f.examen[it.id])
+    .map(it => [it.nombre, f.examen[it.id]]);
+  const filasDisfuncion = [
+    f.claudicacion ? ['Grado de claudicación', f.claudicacion] : null,
+    f.capacidad ? ['Incapacidad / discapacidad', f.capacidad] : null,
+    f.locus ? ['Localización del locus dolenti', f.locus] : null,
+    f.estructural ? ['Deficiencia estructural', f.estructural] : null,
+    f.observaciones ? ['Observaciones', f.observaciones] : null
+  ].filter(Boolean);
+  if (filasExamen.length || filasDisfuncion.length) {
+    cuerpo.push(H2('0. Examen zooquinético en estática'));
+    if (filasExamen.length) cuerpo.push(tabla(['Ítem de inspección', 'Valoración'], filasExamen, [55, 45]));
+    if (filasDisfuncion.length) cuerpo.push(tabla(['Clasificación de la disfunción', 'Registro'], filasDisfuncion, [40, 60]));
+    cuerpo.push(nota('Inspección clínica registrada por el explorador siguiendo la pauta de Sterin (2008). La app no puntúa ni interpreta estos ítems: los recoge junto a la medición biomecánica.'
+      + (f.claudicacion && REF.CLAUDICACION ? ' ' + REF.CLAUDICACION.nota : '')));
+  }
 
   if (imagenPng) {
     cuerpo.push(imagen('rId10', imagenPng.ancho, imagenPng.alto));
@@ -248,6 +268,23 @@ export function construirDocx(o) {
       ['Índice de simetría pelviano', n1(med.indiceSimetriaPelviano)]
     ], [65, 35]));
     cuerpo.push(nota('En perros sanos la asimetría del tren anterior es 2–3 veces mayor que la del posterior (Linder 2021: 8,7 ± 7,5 % frente a 3,7 ± 2,9 % con cuatro básculas). Use umbrales distintos por tren. Mejoría clínicamente relevante: caída de al menos 10 puntos del índice de simetría (Alves 2024).'));
+  }
+
+  if (R.simetriaMuscular) {
+    const s0 = R.simetriaMuscular.filas[0];
+    cuerpo.push(parrafo('Simetría muscular por perímetro', { tam: 10, negrita: true, espacioAntes: 8, espacioDespues: 4 }));
+    cuerpo.push(tabla(['Perímetro', `Lado ${s0.ladoFotografiado}`, `Lado ${s0.ladoContralateral}`, 'Diferencia'],
+      R.simetriaMuscular.filas.map(s => [
+        s.nombre, n1(s.fotografiadoCm, ' cm'), n1(s.contralateralCm, ' cm'),
+        `${n1(Math.abs(s.diferenciaCm), ' cm')} (${n1(s.diferenciaPct, ' %')})` + (s.menor ? ` · menor: ${s.menor}` : '')
+      ]), [30, 20, 20, 30]));
+    cuerpo.push(nota('Sterin (2008) recomienda medir el perímetro muscular para seguir la evolución. ' + R.simetriaMuscular.nota));
+  }
+
+  if (REF.CADENAS_CINETICAS) {
+    cuerpo.push(nota('Equilibrio: ' + REF.CADENAS_CINETICAS.equilibrio
+      + ' En la postura fotografiada el centro de gravedad cae '
+      + (est.dentroDeBase ? 'dentro' : 'FUERA') + ' de la base de sustentación torácico-pelviana (Sterin 2008).'));
   }
 
   /* --- ángulos --------------------------------------------------- */
@@ -309,7 +346,7 @@ export function construirDocx(o) {
   REF.LIMITACIONES.forEach((l, i) => cuerpo.push(parrafo(`${i + 1}. ${l}`, { tam: 8, espacioDespues: 4 })));
 
   cuerpo.push(H2('Referencias'));
-  ['J18', 'R08', 'J22', 'H20', 'L21', 'A24', 'G22', 'P22', 'ML14'].forEach((k, i) => {
+  ['J18', 'R08', 'J22', 'H20', 'L21', 'A24', 'G22', 'P22', 'ML14', 'S08'].forEach((k, i) => {
     const fu = REF.FUENTES[k];
     if (fu) cuerpo.push(parrafo(`${i + 1}. ${fu.cita}${fu.doi ? ' doi:' + fu.doi : ''}`, { tam: 7, espacioDespues: 3 }));
   });
@@ -458,8 +495,13 @@ export function fichaResultados(o) {
     { et: 'Carga pelviana', v: n1(pPct, ' %'),
       s: R.masaKg ? n1(est.cargaPorMiembroPelvianoKg, ' kg') + ' por miembro' : '', col: PAL.pelviano },
     { et: 'CdM en la base', v: n1(est.porcentajeBase, ' %'), s: 'desde el apoyo torácico', col: PAL.azul },
-    { et: 'CdM bajo la cruz', v: n1(est.descensoCdmBajoCruzCm, ' cm'),
-      s: est.alturaCdmCm ? n1(est.alturaCdmCm, ' cm') + ' sobre el suelo' : 'sin calibrar', col: PAL.rojo }
+    { et: 'CdM respecto al codo',
+      v: R.referenciaCodo && R.referenciaCodo.caudalCm !== null
+         ? n1(Math.abs(R.referenciaCodo.caudalCm), ' cm') + (R.referenciaCodo.esCaudal ? ' caudal' : ' craneal')
+         : n1(est.descensoCdmBajoCruzCm, ' cm'),
+      s: R.referenciaCodo && R.referenciaCodo.dorsalCm !== null
+         ? n1(Math.abs(R.referenciaCodo.dorsalCm), ' cm') + (R.referenciaCodo.esProximal ? ' proximal' : ' distal')
+         : 'sin calibrar', col: PAL.rojo }
   ];
   const anchoK = (W - M * 2 - 14 * 3) / 4;
   kpis.forEach((k, i) => {

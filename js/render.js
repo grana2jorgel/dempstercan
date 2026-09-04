@@ -59,7 +59,7 @@ export function dibujar(ctx, o) {
   const { imagen, puntos: p, analisis: R } = o;
   const op = Object.assign({
     imagen: true, esqueleto: true, reparos: true, etiquetas: true,
-    cdmSegmentos: true, cdmGlobal: true, gravedad: true, base: true,
+    cdmSegmentos: true, cdmGlobal: true, gravedad: true, ejeHorizontal: true, base: true,
     angulos: true, cargas: true, cuadricula: false, opacidadImagen: 1, limpiar: true, fondo: '#ffffff'
   }, o.opciones || {});
   const W = o.ancho, H = o.alto;
@@ -191,8 +191,21 @@ export function dibujar(ctx, o) {
   }
 
   /* ---- línea de gravedad y centro de masa global -------------------- */
-  if (R && R.centroDeMasa && (op.cdmGlobal || op.gravedad)) {
+  if (R && R.centroDeMasa && (op.cdmGlobal || op.gravedad || op.ejeHorizontal)) {
     const C = R.centroDeMasa.cdm;
+    // Eje horizontal del centro de gravedad. En el diagrama clásico de Dempster
+    // aplicado al perro (Sterin 2008) el centro de gravedad se identifica como
+    // la INTERSECCIÓN de dos líneas de puntos: la vertical (línea de gravedad)
+    // y esta horizontal, paralela al suelo, que cruza el tronco a su altura.
+    if (op.ejeHorizontal && marco) {
+      const lat = marco.ejeS, largo = Math.max(W, H);
+      ctx.save();
+      ctx.strokeStyle = PALETA.gravedad; ctx.globalAlpha = 0.75; ctx.lineWidth = 1.6 * esc;
+      lineaDiscontinua(ctx,
+        [C[0] + lat[0] * largo, C[1] + lat[1] * largo],
+        [C[0] - lat[0] * largo, C[1] - lat[1] * largo], [7 * esc, 6 * esc]);
+      ctx.restore();
+    }
     if (op.gravedad && marco) {
       const up = marco.ejeH, largo = Math.max(W, H);
       ctx.save();

@@ -3,7 +3,8 @@
  */
 
 import { REPAROS, REPAROS_POR_ID, REPAROS_OBLIGATORIOS, ORDEN_MARCADO, CONFORMACIONES, generarPlantilla } from './landmarks.js';
-import { PERFILES, PERIMETROS, ANGULOS_ESTACION, REPARTO_RANGO, REPARTO_REFERENCIA, ASIMETRIA_NORMAL, DMCI, FUENTES, CDM_REFERENCIA, LIMITACIONES } from './params.js';
+import { PERFILES, PERIMETROS, ANGULOS_ESTACION, REPARTO_RANGO, REPARTO_REFERENCIA, ASIMETRIA_NORMAL, DMCI, FUENTES, CDM_REFERENCIA, LIMITACIONES,
+         EXAMEN_ESTATICO, VALORACION_ITEM, CLAUDICACION, DISFUNCION, CADENAS_CINETICAS } from './params.js';
 import { analizar } from './biomech.js';
 import { dibujar, reparoCercano, PALETA } from './render.js';
 import { proyectarPlantilla, plantillaEnRecuadro } from './template.js';
@@ -34,7 +35,7 @@ const S = {
   analisis: null,
   capas: {
     imagen: true, esqueleto: true, reparos: true, etiquetas: true, nombresReparos: false,
-    cdmSegmentos: true, cdmGlobal: true, gravedad: true, base: true, angulos: true,
+    cdmSegmentos: true, cdmGlobal: true, gravedad: true, ejeHorizontal: true, base: true, angulos: true,
     cargas: true, cuadricula: false, opacidadImagen: 1
   },
   arrastrando: null,
@@ -469,6 +470,21 @@ function pintarResultados() {
     <div class="nota">Mejoría clínicamente relevante: caída de al menos ${Math.abs(DMCI.indiceSimetria)} puntos del índice de simetría (Alves 2024).</div>`;
   }
 
+  if (R.simetriaMuscular) {
+    html += `<h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--tinta-2)">Simetría muscular (perímetros)</h3>
+    <table class="res"><thead><tr><th>Perímetro</th><th>Fotografiado</th><th>Contralateral</th><th>Diferencia</th></tr></thead><tbody>`;
+    for (const s of R.simetriaMuscular.filas) {
+      html += `<tr><td>${s.nombre.replace('Perímetro del ', '')}</td><td>${n1(s.fotografiadoCm, ' cm')}</td>
+        <td>${n1(s.contralateralCm, ' cm')}</td>
+        <td>${n1(Math.abs(s.diferenciaCm), ' cm')} (${n1(s.diferenciaPct, ' %')})${s.menor ? '<br><span style="font-size:11px;color:var(--tinta-3)">menor: ' + s.menor + '</span>' : ''}</td></tr>`;
+    }
+    html += `</tbody></table><div class="nota">${R.simetriaMuscular.nota}</div>`;
+  }
+
+  html += `<div class="nota ${e.dentroDeBase ? 'ok' : 'critica'}">Equilibrio: ${CADENAS_CINETICAS.equilibrio}
+    En esta postura el centro de gravedad cae <b>${e.dentroDeBase ? 'dentro' : 'FUERA'}</b> de la base de sustentación
+    torácico-pelviana (Sterin 2008).</div>`;
+
   const morfo = R.centroDeMasa.modo === 'morfometrico';
   html += `<h3 style="font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--tinta-2)">Segmentos</h3>
   <table class="res"><thead><tr><th>Segmento</th><th>% masa</th>${morfo ? '<th>Tabla fija</th>' : ''}<th>Masa</th><th>Long.</th></tr></thead><tbody>`;
@@ -527,6 +543,16 @@ function leerFormulario() {
   f.lado = $('#fLado').value;
   f.explorador = $('#fExplorador').value.trim();
   f.motivo = $('#fMotivo').value.trim();
+  f.actividad = $('#fActividad').value;
+  f.habitat = $('#fHabitat').value;
+  f.antecedentes = $('#fAntecedentes').value.trim();
+  f.examen = {};
+  for (const it of EXAMEN_ESTATICO) f.examen[it.id] = $('#ex-' + it.id).value;
+  f.claudicacion = $('#fClaudicacion').value;
+  f.capacidad = $('#fCapacidad').value;
+  f.locus = $('#fLocus').value.trim();
+  f.estructural = $('#fEstructural').value.trim();
+  f.observaciones = $('#fObservaciones').value.trim();
   S.caso.fecha = $('#fFecha').value || S.caso.fecha;
   S.caso.masaKg = Number($('#fMasa').value) > 0 ? Number($('#fMasa').value) : null;
   S.caso.perfil = $('#fPerfil').value;
@@ -537,8 +563,10 @@ function leerFormulario() {
   S.caso.conformacion = $('#fConformacion').value || 'mesomorfo';
   S.caso.perimetros = {};
   for (const per of PERIMETROS) {
-    const n = Number($('#per-' + per.id).value);
-    if (Number.isFinite(n) && n > 0) S.caso.perimetros[per.id] = n;
+    for (const id of per.contralateral ? [per.id, per.id + '_contra'] : [per.id]) {
+      const n = Number($('#per-' + id).value);
+      if (Number.isFinite(n) && n > 0) S.caso.perimetros[id] = n;
+    }
   }
 
   const v = ['fTdi', 'fTdd', 'fTpi', 'fTpd'].map(id => Number($('#' + id).value));
@@ -555,13 +583,24 @@ function escribirFormulario() {
   $('#fEdad').value = f.edad || ''; $('#fSexo').value = f.sexo || '';
   $('#fLado').value = f.lado || ''; $('#fExplorador').value = f.explorador || '';
   $('#fMotivo').value = f.motivo || ''; $('#fFecha').value = S.caso.fecha || '';
+  $('#fActividad').value = f.actividad || ''; $('#fHabitat').value = f.habitat || '';
+  $('#fAntecedentes').value = f.antecedentes || '';
+  for (const it of EXAMEN_ESTATICO) $('#ex-' + it.id).value = f.examen?.[it.id] || '';
+  $('#fClaudicacion').value = f.claudicacion || '';
+  $('#fCapacidad').value = f.capacidad || '';
+  $('#fLocus').value = f.locus || ''; $('#fEstructural').value = f.estructural || '';
+  $('#fObservaciones').value = f.observaciones || '';
   $('#fMasa').value = S.caso.masaKg ?? '';
   $('#fPerfil').value = S.caso.perfil || 'jones_gsd';
   $('#fReferencia').value = S.caso.referencia || 'apoyos';
   $('#fDispositivo').value = S.caso.dispositivo || '';
   $('#fConformacion').value = S.caso.conformacion || 'mesomorfo';
   $('#fCalCm').value = S.caso.calibracion?.cm ?? '';
-  for (const per of PERIMETROS) $('#per-' + per.id).value = S.caso.perimetros?.[per.id] ?? '';
+  for (const per of PERIMETROS) {
+    for (const id of per.contralateral ? [per.id, per.id + '_contra'] : [per.id]) {
+      $('#per-' + id).value = S.caso.perimetros?.[id] ?? '';
+    }
+  }
   const cm = S.caso.cargasMedidas || {};
   $('#fTdi').value = cm.tdi ?? ''; $('#fTdd').value = cm.tdd ?? '';
   $('#fTpi').value = cm.tpi ?? ''; $('#fTpd').value = cm.tpd ?? '';
@@ -624,7 +663,10 @@ async function aplicarImagen(url) {
   S.imagen = await cargarImagenDesdeDataUrl(url);
   S.caso.imagenTam = { w: S.imagen.naturalWidth, h: S.imagen.naturalHeight };
   S.caso.guardado = false;
-  encajar(); recalcular();
+  // recalcular() ANTES de encajar(): encajar() ya pinta, y si el análisis
+  // todavía no existe el lienzo sale con el esqueleto pelado, sin centro de
+  // masa ni ejes, hasta que el usuario toca algo. Se veía al reabrir un caso.
+  recalcular(); encajar();
 }
 
 function abrirCamara() {
@@ -728,7 +770,8 @@ $('#btnSiguiente').onclick = () => {
 const CAPAS_UI = [
   ['imagen', 'Fotografía'], ['esqueleto', 'Cadenas segmentarias'], ['reparos', 'Reparos'],
   ['nombresReparos', 'Nombres de los reparos'], ['cdmSegmentos', 'Centros de masa parciales'],
-  ['cdmGlobal', 'Centro de masa global'], ['gravedad', 'Línea de gravedad'],
+  ['cdmGlobal', 'Centro de masa global'], ['gravedad', 'Línea de gravedad (vertical)'],
+  ['ejeHorizontal', 'Eje horizontal del CdG'],
   ['base', 'Base de sustentación'], ['angulos', 'Ángulos'], ['cargas', 'Vectores de carga'],
   ['etiquetas', 'Etiquetas numéricas'], ['cuadricula', 'Cuadrícula']
 ];
@@ -773,7 +816,7 @@ async function abrirCaso(id) {
   S.caso = { ...nuevoCaso(), ...c, guardado: true };
   S.imagen = c.imagen ? await cargarImagenDesdeDataUrl(c.imagen).catch(() => null) : null;
   S.activo = ORDEN_MARCADO.find(k => !S.caso.puntos[k]) || ORDEN_MARCADO[0];
-  escribirFormulario(); pintarLista(); encajar(); recalcular();
+  escribirFormulario(); pintarLista(); recalcular(); encajar();
   $('#cajon').hidden = true;
   brindis('Caso abierto.');
 }
@@ -794,7 +837,7 @@ $('#btnGuardar').onclick = async () => {
 $('#btnNuevo').onclick = () => {
   if (!S.caso.guardado && Object.keys(S.caso.puntos).length && !confirm('El caso actual tiene cambios sin guardar. ¿Continuar?')) return;
   S.caso = nuevoCaso(); S.imagen = null; S.activo = ORDEN_MARCADO[0];
-  escribirFormulario(); pintarLista(); encajar(); recalcular();
+  escribirFormulario(); pintarLista(); recalcular(); encajar();
   $('#cajon').hidden = true;
 };
 
@@ -833,7 +876,8 @@ function lienzoDiagrama(escalaSalida = 2) {
   return c;
 }
 
-const REFERENCIAS_EXPORT = { ANGULOS_ESTACION, REPARTO_REFERENCIA, LIMITACIONES, FUENTES, CDM_REFERENCIA };
+const REFERENCIAS_EXPORT = { ANGULOS_ESTACION, REPARTO_REFERENCIA, LIMITACIONES, FUENTES, CDM_REFERENCIA,
+                             EXAMEN_ESTATICO, CLAUDICACION, DISFUNCION, CADENAS_CINETICAS };
 
 const nombreArchivo = (ext) =>
   `dempstercan-${(S.caso.ficha.paciente || 'caso').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w-]+/g, '_')}-${S.caso.fecha || 'sin-fecha'}.${ext}`;
@@ -956,11 +1000,34 @@ function inicio() {
   }
   const rej = $('#rejillaPerimetros');
   for (const per of PERIMETROS) {
-    const l = document.createElement('label');
-    l.innerHTML = `${per.nombre}<input id="per-${per.id}" type="number" step="0.1" min="0" inputmode="decimal" title="${per.guia}">`;
-    rej.appendChild(l);
-    l.querySelector('input').addEventListener('input', leerFormulario);
+    // Los perímetros musculares se piden en los dos lados: la diferencia entre
+    // ellos es la medida de atrofia que recomienda Sterin (2008). El del lado
+    // fotografiado es además el que alimenta el modelo morfométrico.
+    const campos = per.contralateral
+      ? [{ id: per.id, et: per.nombre + ' · lado fotografiado' },
+         { id: per.id + '_contra', et: per.nombre + ' · contralateral' }]
+      : [{ id: per.id, et: per.nombre }];
+    for (const c of campos) {
+      const l = document.createElement('label');
+      l.innerHTML = `${c.et}<input id="per-${c.id}" type="number" step="0.1" min="0" inputmode="decimal" title="${per.guia}">`;
+      rej.appendChild(l);
+      l.querySelector('input').addEventListener('input', leerFormulario);
+    }
   }
+
+  const rejEx = $('#rejillaExamen');
+  for (const it of EXAMEN_ESTATICO) {
+    const l = document.createElement('label');
+    l.innerHTML = `${it.nombre}<select id="ex-${it.id}">${
+      VALORACION_ITEM.map(v => `<option value="${v}">${v}</option>`).join('')}</select>`;
+    rejEx.appendChild(l);
+    l.querySelector('select').addEventListener('change', leerFormulario);
+  }
+  $('#fClaudicacion').innerHTML = CLAUDICACION.grados
+    .map(g => `<option value="${g}">${g}</option>`).join('');
+  $('#fCapacidad').innerHTML = (DISFUNCION.campos.find(c => c.id === 'capacidad').opciones || [])
+    .map(g => `<option value="${g}">${g}</option>`).join('');
+  $('#notaClaudicacion').textContent = CLAUDICACION.nota;
   $('#acercaDe').innerHTML = `DempsterCan calcula el centro de masa, el reparto de carga estático, los ángulos
     articulares y los momentos externos de un perro en estación a partir de una fotografía lateral, aplicando los
     parámetros segmentarios caninos publicados. <b>No usa ningún coeficiente humano de Dempster (1955)</b>: existe tabla

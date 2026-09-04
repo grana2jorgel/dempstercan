@@ -9,7 +9,7 @@
  * Unidades: masa kg, longitud cm, fuerza N, momento N·cm.
  */
 
-import { SEGMENTOS, PERFILES, ANGULOS_ESTACION, REFERENCIA_MORFOMETRICA } from './params.js';
+import { SEGMENTOS, PERFILES, ANGULOS_ESTACION, REFERENCIA_MORFOMETRICA, PERIMETROS } from './params.js';
 import { ARTICULACIONES, PLANTILLA, longitudesPlantilla } from './landmarks.js';
 
 export const G = 9.80665; // m/s²
@@ -520,6 +520,52 @@ export function lineaDeGravedad(p, cdm, marco, pxPorCm) {
 /* ------------------------------------------------------------------ */
 
 /**
+ * Simetría muscular por perímetro, lado fotografiado frente a contralateral.
+ *
+ * Sterin (2008) recomienda medir el perímetro del músculo para seguir la
+ * evolución del paciente. La app calcula la diferencia y la expresa en cm y en
+ * porcentaje del lado mayor, y AHÍ SE PARA: no existe en esa fuente ni en
+ * ninguna otra de las que usa esta app un umbral publicado de diferencia
+ * perimetral que separe lo normal de lo patológico en el perro. El criterio
+ * que sí está respaldado es el mismo que para los ángulos: comparar con el
+ * miembro contralateral del propio paciente y con su medición anterior.
+ *
+ * @param {Object} perimetros  claves `<id>` (lado fotografiado) y `<id>_contra`
+ * @param {string} lado        'Izquierdo' | 'Derecho' | '' — lado fotografiado
+ */
+export function simetriaMuscular(perimetros = {}, lado = '') {
+  const nombreFoto = lado ? lado.toLowerCase() : 'fotografiado';
+  const nombreContra = lado === 'Izquierdo' ? 'derecho'
+    : lado === 'Derecho' ? 'izquierdo' : 'contralateral';
+  const filas = [];
+  for (const per of PERIMETROS) {
+    if (!per.contralateral) continue;
+    const a = Number(perimetros[per.id]);
+    const b = Number(perimetros[per.id + '_contra']);
+    if (!(a > 0) || !(b > 0)) continue;
+    const mayor = Math.max(a, b);
+    const dif = a - b;
+    filas.push({
+      id: per.id,
+      nombre: per.nombre,
+      fotografiadoCm: a,
+      contralateralCm: b,
+      ladoFotografiado: nombreFoto,
+      ladoContralateral: nombreContra,
+      diferenciaCm: dif,
+      diferenciaPct: Math.abs(dif) / mayor * 100,
+      menor: dif === 0 ? null : (dif < 0 ? nombreFoto : nombreContra)
+    });
+  }
+  if (!filas.length) return null;
+  return {
+    filas,
+    nota: 'Diferencia expresada en cm y en porcentaje del lado de mayor perímetro. No hay umbral publicado de normalidad para la diferencia perimetral en el perro: interprétela frente al propio paciente en su medición anterior.',
+    fuente: 'S08'
+  };
+}
+
+/**
  * @param {{tdi:number,tdd:number,tpi:number,tpd:number}} kg  cargas por miembro
  *        (torácico izq/der, pelviano izq/der) en kg o en % — se normaliza.
  */
@@ -668,6 +714,16 @@ export function analizar(caso) {
   if (cm.modo === 'morfometrico' && (confBraqui || (masaKg && masaKg < 6))) {
     avisos.push('En razas toy y braquicéfalas la cabeza es corta pero voluminosa, y el modelo la ajusta por longitud, así que probablemente le asigne MENOS masa de la real. Amit et al. (2009) midieron 9,2 % de masa craneal en mestizos frente al 7,70 % del Pastor Alemán. Téngalo en cuenta al interpretar el reparto: una cabeza infravalorada desplaza el resultado hacia el tren posterior.');
   }
+  // Un perímetro bilateral medido en un solo lado no sirve para lo que se
+  // midió: el valor clínico está en la diferencia entre los dos lados.
+  for (const per of PERIMETROS) {
+    if (!per.contralateral) continue;
+    const a = Number((caso.perimetros || {})[per.id]);
+    const b = Number((caso.perimetros || {})[per.id + '_contra']);
+    if ((a > 0) !== (b > 0)) {
+      avisos.push(`«${per.nombre}» se ha medido en un solo lado. La medida sirve para el modelo de masas, pero la atrofia solo se aprecia comparando los dos lados a la misma altura; mida también el contralateral.`);
+    }
+  }
   if (!calibrado) avisos.push('Sin calibración de escala: no se calculan longitudes en cm, fuerzas ni momentos articulares.');
   if (!masaKg) avisos.push('Sin masa corporal: las cargas se expresan solo en porcentaje.');
   if (Math.abs(marco.inclinacionSuelo) > 8 && caso.referencia !== 'imagen') {
@@ -700,6 +756,8 @@ export function analizar(caso) {
     marco, pxPorCm, calibrado, masaKg,
     centroDeMasa: cm, estatica: est, morfometria: morf,
     angulos: ang, lineaGravedad: lg, referenciaCodo: codo, momentos: mom, origenCargas,
-    incertidumbre: inc, repartoMedido: medido, avisos
+    incertidumbre: inc, repartoMedido: medido,
+    simetriaMuscular: simetriaMuscular(caso.perimetros, caso.lado),
+    avisos
   };
 }

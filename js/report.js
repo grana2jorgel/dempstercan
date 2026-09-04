@@ -4,7 +4,8 @@
  * y sin conexión).
  */
 
-import { FUENTES, REPARTO_REFERENCIA, REPARTO_RANGO, ASIMETRIA_NORMAL, DMCI, LIMITACIONES, ANGULOS_ESTACION, CDM_REFERENCIA } from './params.js';
+import { FUENTES, REPARTO_REFERENCIA, REPARTO_RANGO, ASIMETRIA_NORMAL, DMCI, LIMITACIONES, ANGULOS_ESTACION, CDM_REFERENCIA,
+         EXAMEN_ESTATICO, CLAUDICACION, DISFUNCION, CADENAS_CINETICAS } from './params.js';
 
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const n1 = (v, u = '') => (v === null || v === undefined || Number.isNaN(v)) ? '—' : v.toFixed(1) + u;
@@ -64,7 +65,26 @@ export function construirInforme({ caso, analisis: R, imagenDataUrl }) {
     esc(r.metodo), `<span class="mini">${esc(r.fuente)}</span>`
   ]);
 
-  const fuentesUsadas = ['J18', 'R08', 'J22', 'H20', 'L21', 'A24', 'G22', 'P22', 'ML14'];
+  const fuentesUsadas = ['J18', 'R08', 'J22', 'H20', 'L21', 'A24', 'G22', 'P22', 'ML14', 'S08'];
+
+  // Examen zooquinético: solo se imprime lo que el explorador haya rellenado.
+  const filasExamen = EXAMEN_ESTATICO
+    .filter(it => f.examen && f.examen[it.id])
+    .map(it => [esc(it.nombre), esc(f.examen[it.id])]);
+  const filasDisfuncion = [
+    f.claudicacion ? ['Grado de claudicación', esc(f.claudicacion)] : null,
+    f.capacidad ? ['Incapacidad / discapacidad', esc(f.capacidad)] : null,
+    f.locus ? ['Localización del locus dolenti', esc(f.locus)] : null,
+    f.estructural ? ['Deficiencia estructural', esc(f.estructural)] : null,
+    f.observaciones ? ['Observaciones', esc(f.observaciones)] : null
+  ].filter(Boolean);
+  const hayExamen = filasExamen.length || filasDisfuncion.length;
+
+  const filasSim = R.simetriaMuscular ? R.simetriaMuscular.filas.map(s => [
+    esc(s.nombre), n1(s.fotografiadoCm, ' cm'), n1(s.contralateralCm, ' cm'),
+    `${n1(Math.abs(s.diferenciaCm), ' cm')} (${n1(s.diferenciaPct, ' %')})`,
+    s.menor ? esc(s.menor) : 'iguales'
+  ]) : [];
 
   return `<!doctype html><html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -118,12 +138,24 @@ Generado por DempsterCan · ${esc(new Date().toLocaleString('es-MX'))}</div>
   <div><b>Fecha de la toma</b>${esc(caso.fecha || '—')}</div>
   <div><b>Lado fotografiado</b>${esc(f.lado || '—')}</div>
   <div><b>Explorador</b>${esc(f.explorador || '—')}</div>
+  <div><b>Actividad</b>${esc(f.actividad || '—')}</div>
+  <div><b>Hábitat</b>${esc(f.habitat || '—')}</div>
   <div style="grid-column: 1 / -1"><b>Motivo / diagnóstico</b>${esc(f.motivo || '—')}</div>
+  ${f.antecedentes ? `<div style="grid-column: 1 / -1"><b>Cirugías y antecedentes</b>${esc(f.antecedentes)}</div>` : ''}
 </div>
 
 ${imagenDataUrl ? `<figure><img src="${imagenDataUrl}" alt="Diagrama"><figcaption>
 Diagrama de Dempster: cadenas segmentarias, centros de masa parciales (área proporcional a la fracción de masa),
-centro de masa global, línea de gravedad, base de sustentación y reparto de carga.</figcaption></figure>` : ''}
+centro de masa global, líneas de gravedad vertical y horizontal cuya intersección marca el centro de gravedad,
+base de sustentación y reparto de carga.</figcaption></figure>` : ''}
+
+${hayExamen ? `<h2>0. Examen zooquinético en estática</h2>
+${filasExamen.length ? tabla(['Ítem de inspección', 'Valoración'], filasExamen) : ''}
+${filasDisfuncion.length ? tabla(['Clasificación de la disfunción', 'Registro'], filasDisfuncion) : ''}
+<div class="aviso">Inspección clínica registrada por el explorador siguiendo la pauta de Sterin (2008).
+La app <b>no puntúa ni interpreta</b> estos ítems: los recoge para que el seguimiento del paciente reúna en un mismo
+documento la observación clínica y la medición biomecánica.
+${f.claudicacion ? esc(CLAUDICACION.nota) : ''}</div>` : ''}
 
 <h2>1. Resultado estático</h2>
 <div class="kpis">
@@ -136,6 +168,11 @@ centro de masa global, línea de gravedad, base de sustentación y reparto de ca
   <div class="kpi"><b>CdM bajo la cruz</b><span>${n1(est.descensoCdmBajoCruzCm, ' cm')}</span>
     <em>${est.alturaCdmCm ? n1(est.alturaCdmCm, ' cm') + ' sobre el suelo' : 'sin calibrar'}</em></div>
 </div>
+
+${R.referenciaCodo && R.referenciaCodo.caudalCm !== null ? `<div class="aviso ${R.referenciaCodo.coherente ? '' : 'critico'}">
+<b>Situación respecto al codo.</b> ${esc(R.referenciaCodo.nota)} En este paciente el centro de masa queda
+${n1(Math.abs(R.referenciaCodo.caudalCm), ' cm')} ${R.referenciaCodo.esCaudal ? 'caudal' : 'craneal'} y
+${n1(Math.abs(R.referenciaCodo.dorsalCm), ' cm')} ${R.referenciaCodo.esProximal ? 'proximal' : 'distal'} al codo.</div>` : ''}
 
 ${est.descensoCdmBajoCruzCm !== null && est.descensoCdmBajoCruzCm !== undefined ? `<div class="aviso">
 <b>Comprobación de coherencia del modelo.</b> El centro de masa calculado por suma de segmentos queda
@@ -178,6 +215,15 @@ Diferencia mínima clínicamente importante para declarar mejoría: <b>${DMCI.in
 <b>${DMCI.desviacion}</b> de desviación. ${esc(DMCI.nota)}
 En perros sanos la asimetría del tren anterior es 2–3 veces mayor que la del posterior: use umbrales distintos.</div>` : ''}
 
+${filasSim.length ? `<h3>Simetría muscular por perímetro</h3>
+${tabla(['Perímetro', `Lado ${esc(R.simetriaMuscular.filas[0].ladoFotografiado)} (fotografiado)`, `Lado ${esc(R.simetriaMuscular.filas[0].ladoContralateral)}`, 'Diferencia', 'Lado menor'], filasSim)}
+<div class="aviso">Sterin (2008) recomienda medir el perímetro muscular para seguir la evolución del paciente.
+${esc(R.simetriaMuscular.nota)}</div>` : ''}
+
+<div class="aviso ${est.dentroDeBase ? '' : 'critico'}"><b>Equilibrio.</b> ${esc(CADENAS_CINETICAS.equilibrio)}
+En la postura fotografiada el centro de gravedad cae <b>${est.dentroDeBase ? 'dentro' : 'FUERA'}</b> de la base de
+sustentación torácico-pelviana, a ${n1(est.porcentajeBase, ' %')} de su longitud desde el apoyo torácico.</div>
+
 <h2>2. Ángulos articulares en estación</h2>
 ${tabla(['Articulación', 'Medido', 'Variante pélvica', 'Referencia publicada en estación'], filasAng)}
 <div class="aviso critico"><b>Los ángulos de esta app y los de la bibliografía no son intercambiables.</b>
@@ -207,6 +253,10 @@ marcada, no de una tabla de supuestos. Un brazo de palanca mayor implica mayor d
 <p>Perfil: <b>${esc(cm.perfil)}</b>. Los porcentajes de masa y los coeficientes de centro de masa proceden de mediciones
 en perros; <b>no se ha usado ningún valor humano de Dempster (1955)</b>.
 Los segmentos pares se contabilizan dos veces con la misma posición sagital (simetría izquierda-derecha asumida).</p>
+<div class="aviso"><b>Nomenclatura del diagrama.</b> ${esc(CADENAS_CINETICAS.descripcion)}
+${esc(CADENAS_CINETICAS.ubm)} ${esc(CADENAS_CINETICAS.sfc)} (Sterin 2008).
+Como esta valoración parte de una fotografía sagital, se ven las cadenas de un solo hemicuerpo: las dos restantes se
+asumen simétricas. La comparación real entre lados exige básculas, perímetros bilaterales o una segunda fotografía.</div>
 ${morfo ? `<div class="aviso"><b>Adaptación a la conformación de este paciente.</b>
 La masa de cada segmento se ha redistribuido en proporción a su volumen, m ∝ ρ · A · L, con la longitud L medida sobre la
 fotografía${cm.segmentos.some(s => s.morfo && s.morfo.perimetroCm) ? ' y la sección A deducida de los perímetros medidos con cinta' : ' y la sección A tomada de la referencia escalada a la alzada del paciente'},

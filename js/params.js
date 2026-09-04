@@ -85,6 +85,12 @@ export const FUENTES = {
     doi: '10.1055/s-0040-1713825',
     url: 'https://www.thieme-connect.com/products/ejournals/pdf/10.1055/s-0040-1713825.pdf',
     muestra: 'Goniometría PASIVA por tamaño corporal y condrodistrofia.'
+  },
+  S08: {
+    cita: 'Sterin GM. Diagnóstico zookinésico en pequeños animales. Información Veterinaria. Septiembre 2008:13–16.',
+    doi: null,
+    url: null,
+    muestra: 'Artículo de revisión clínica. NO aporta ningún dato numérico: define la ESTRUCTURA del examen zooquinético y del diagrama de Dempster aplicado al perro (5 cadenas cinéticas, UBM, SFC) y la definición operativa de equilibrio. De aquí no sale ninguna constante de esta app.'
   }
 };
 
@@ -179,9 +185,85 @@ export const PERIMETROS = [
   // geométrica, así que la app avisa del asunto en vez de fingir que lo corrige.
   { id: 'abdomen',   nombre: 'Perímetro abdominal', guia: 'En el punto más estrecho, delante de las alas del ilion.' },
   { id: 'cuello',    nombre: 'Perímetro del cuello',guia: 'En el tercio medio del cuello, sin comprimir.' },
-  { id: 'muslo',     nombre: 'Perímetro del muslo', guia: 'En el punto de mayor masa muscular, con el miembro en apoyo. Repítalo en los dos lados: la diferencia cuantifica la atrofia.' },
-  { id: 'antebrazo', nombre: 'Perímetro del antebrazo', guia: 'En el tercio proximal, en el vientre de los flexores del carpo.' }
+  { id: 'muslo',     nombre: 'Perímetro del muslo', contralateral: true,
+    guia: 'En el punto de mayor masa muscular, con el miembro en apoyo. Mídalo en los DOS lados a la misma altura: la diferencia entre ellos es la medida de atrofia que recomienda Sterin (2008) para seguir la evolución.' },
+  { id: 'antebrazo', nombre: 'Perímetro del antebrazo', contralateral: true,
+    guia: 'En el tercio proximal, en el vientre de los flexores del carpo. También bilateral.' }
 ];
+
+/**
+ * ESTRUCTURA DEL DIAGRAMA DE DEMPSTER APLICADO AL PERRO — Sterin 2008.
+ *
+ * Este bloque no contiene ni una sola cifra: es vocabulario y estructura. Se
+ * incorpora porque es la descripción del diagrama que se usa en la clínica de
+ * rehabilitación veterinaria en español, y conviene que lo que la app dibuja y
+ * lo que el informe nombra coincidan con lo que el clínico espera leer.
+ */
+export const CADENAS_CINETICAS = {
+  n: 5,
+  descripcion: 'El diagrama de Dempster canino se compone de 5 cadenas cinéticas: los dos miembros torácicos, los dos miembros pelvianos y el raquis. La intersección de las líneas de puntos vertical y horizontal marca el centro de gravedad.',
+  lista: [
+    { id: 'toracicaIzq', nombre: 'Miembro torácico izquierdo', tipo: 'ejecución' },
+    { id: 'toracicaDer', nombre: 'Miembro torácico derecho',   tipo: 'ejecución' },
+    { id: 'pelvianaIzq', nombre: 'Miembro pelviano izquierdo', tipo: 'ejecución' },
+    { id: 'pelvianaDer', nombre: 'Miembro pelviano derecho',   tipo: 'ejecución' },
+    { id: 'raquis',      nombre: 'Raquis',                     tipo: 'asociación' }
+  ],
+  ubm: 'Unidad biomecánica (UBM): cada articulación de los miembros, entendida como la suma de sus componentes osteoarticular, neuromuscular y angiovegetativo. Las cadenas de los miembros son cadenas de EJECUCIÓN formadas por UBM sucesivas.',
+  sfc: 'Segmento cinético funcional (SFC): dos vértebras contiguas y su articulación intervertebral. El raquis es una cadena de ASOCIACIÓN formada por SFC sucesivos.',
+  equilibrio: 'Equilibrio: capacidad de mantener el centro de gravedad del cuerpo por encima de la superficie de apoyo; en estación, dentro de la base de sustentación.',
+  fuente: 'S08'
+};
+
+/**
+ * EXAMEN ZOOQUINÉTICO EN ESTÁTICA — ítems de inspección (Sterin 2008).
+ *
+ * ATENCIÓN a lo que SÍ y lo que NO viene del artículo. El artículo enumera los
+ * ítems que hay que observar en estática; NO publica una escala de graduación
+ * para ninguno de ellos. Por eso cada ítem se ofrece con una valoración
+ * mínima (normal / alterado / no valorado) más una nota libre, en vez de
+ * inventar grados que nadie ha validado. Lo que el explorador escriba en la
+ * nota es lo que acaba en el informe.
+ */
+export const EXAMEN_ESTATICO = [
+  { id: 'postura',      nombre: 'Postura' },
+  { id: 'actitud',      nombre: 'Actitud' },
+  { id: 'aplomos',      nombre: 'Aplomos' },
+  { id: 'desarrollo',   nombre: 'Desarrollo muscular' },
+  { id: 'tono',         nombre: 'Tono y trofismo muscular' },
+  { id: 'estabilidad',  nombre: 'Estabilidad' }
+];
+
+export const VALORACION_ITEM = ['', 'Normal', 'Alterado', 'No valorado'];
+
+/**
+ * Grado de claudicación.
+ *
+ * Sterin (2008) cita claudicaciones «de 1º a 4º grado» pero NO publica los
+ * descriptores de cada grado, y estos varían entre autores y entre escalas.
+ * La app registra el grado y deja que el explorador anote el criterio usado;
+ * no impone descriptores que el artículo no da.
+ */
+export const CLAUDICACION = {
+  grados: ['', '0 — ausente', '1', '2', '3', '4'],
+  fuente: 'S08',
+  nota: 'La escala de 1 a 4 grados se cita en Sterin (2008), que no publica los descriptores de cada grado. Anote junto al grado la escala que utiliza, para que la comparación con revisiones posteriores sea válida.'
+};
+
+/**
+ * Clasificación de la disfunción (Sterin 2008). Definiciones del propio artículo.
+ */
+export const DISFUNCION = {
+  fuente: 'S08',
+  campos: [
+    { id: 'locus', nombre: 'Localización del locus dolenti',
+      ayuda: 'Punto de dolor. La limitación de actividades suele asociarse al dolor, que muchas veces no se manifiesta de forma audible; localizarlo permite explicar la disfunción locomotora y sus consecuencias biomecánicas.' },
+    { id: 'capacidad', nombre: 'Incapacidad / discapacidad', opciones: ['', 'Ninguna', 'Discapacidad', 'Incapacidad'],
+      ayuda: 'Incapacidad: falta absoluta o total de potencia para la actividad cotidiana, con pérdida completa de la función. Discapacidad: dificultad, imperfección o desorden parcial para mantener la potencia necesaria.' },
+    { id: 'estructural', nombre: 'Deficiencia estructural',
+      ayuda: 'Qué estructura concreta (músculo, hueso, articulación, nervio) muestra la deficiencia que da resultado a la disfunción del conjunto.' }
+  ]
+};
 
 /** Perfiles alternativos de masa segmentaria por raza, donde existe dato publicado. */
 export const PERFILES = {
@@ -332,7 +414,8 @@ export const LIMITACIONES = [
   'El modelo asume que cada segmento es un sólido de sección uniforme a lo largo de su eje. Es una simplificación: un tórax real es más profundo en su parte caudal, y un muslo no es un cilindro. Introducir perímetros medidos con cinta reduce ese error donde más pesa.',
   'El centro de masa global de Johnson et al. (2022) se midió en DECÚBITO, no en estación. Esta app calcula el CdM en estación por suma de segmentos, no a partir de esa ecuación.',
   'No existe ecuación publicada que prediga el reparto torácico:pelviano a partir de la longitud del tronco o de un índice de conformación. El efecto raza está demostrado; la función que lo describe, no.',
-  'La goniometría de referencia (Jaegger 2002, Formenton 2019, Reusing 2020) es rango PASIVO en decúbito. Una foto en estación no puede medir eso.',
+  'La goniometría de referencia (Jaegger 2002, Formenton 2019, Reusing 2020) es rango PASIVO en decúbito. Una foto en estación no puede medir eso. Sterin (2008) añade que esa goniometría clínica debe ser además BILATERAL y realizada entre dos personas: la app no la sustituye, la complementa con la postura real en carga.',
+  'El diagrama de Dempster canino se compone de CINCO cadenas cinéticas (dos torácicas, dos pelvianas y el raquis, Sterin 2008). Una fotografía sagital solo muestra una de cada par, así que la app mide un hemicuerpo y asume simetría izquierda-derecha para los segmentos pares. Todo lo que sea comparación entre lados tiene que entrar por otra vía: el reparto de carga medido con básculas, los perímetros musculares de los dos lados, o una segunda fotografía del lado contrario.',
   'Los ángulos en estación de Giansetto (2022) se midieron por radiografía con ejes mecánicos. Los ángulos de esta app usan marcadores cutáneos y no son numéricamente intercambiables con ellos.',
   'El desplazamiento piel-hueso (artefacto de tejido blando) es máximo en escápula, cadera y muslo. Los reparos proximales son los menos fiables.',
   'La atrofia muscular altera los parámetros inerciales: el muslo con rotura de LCC pesa ~9 % menos (Ragetly 2008). En un paciente con atrofia crónica, el modelo del perro sano introduce error sistemático.'
